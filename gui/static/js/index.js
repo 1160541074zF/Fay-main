@@ -29,16 +29,12 @@ new Vue({
             attribute_gender: "",
             attribute_age: "",
             attribute_birth: "",
-            attribute_type:"",
-            attribute_location:"",
-            attribute_coordinate:"",
-            attribute_state:"",
-            // attribute_zodiac: "",
-            // attribute_constellation: "",
-            // attribute_job: "",
-            // attribute_hobby: "",
-            // attribute_contact: "",
-            // attribute_voice: "",
+            attribute_zodiac: "",
+            attribute_constellation: "",
+            attribute_job: "",
+            attribute_hobby: "",
+            attribute_contact: "",
+            attribute_voice: "",
             interact_perception_gift: 0,
             interact_perception_follow: 0,
             interact_perception_join: 0,
@@ -50,6 +46,26 @@ new Vue({
             live_state: 0,
             device_list: [],
             send_msg:"",
+            picture_url:"",
+            // 用户信息
+            user_inform:{
+                name: "",
+                gender: "",
+                age: "",
+                type:"",
+                location:"",
+                coordinate:"",
+                sit_time:"",
+                lay_time:"",
+                med_inform:{
+                    name:"",
+                    spec:"",
+                    usage:"",
+                    freq:"",
+                    dosage:"",
+                    time:"",
+                }
+            },
             // device_list: [
             //     {
             //         value: '选项1',
@@ -243,20 +259,9 @@ new Vue({
                             _this.source_liveRoom_url = source["liveRoom"]["url"]
                             _this.source_record_enabled = source["record"]["enabled"]
                             _this.source_record_device = source["record"]["device"]
-                            // 姓名
                             _this.attribute_name = attribute["name"]
-                            // 性别
                             _this.attribute_gender = attribute["gender"]
-                            // 年龄
                             _this.attribute_age = attribute["age"]
-                            // 用户类型
-                            _this.attribute_type = attribute["type"]
-                            // 位置
-                            _this.attribute_location = attribute["location"]
-                            // 坐标
-                            _this.attribute_coordinate = attribute["coordinate"]
-                            // 状态
-                            _this.attribute_state = attribute["state"]
                             _this.attribute_birth = attribute["birth"]
                             _this.attribute_zodiac = attribute["zodiac"]
                             _this.attribute_constellation = attribute["constellation"]
@@ -323,14 +328,6 @@ new Vue({
                         "name": this.attribute_name,
                         "gender": this.attribute_gender,
                         "age": this.attribute_age,
-                        // 用户类型
-                        "type":this.attribute_type,
-                        // 位置
-                        "location":this.attribute_location,
-                        // 坐标
-                        "coordinate":this.attribute_coordinate,
-                        // 状态
-                        "state":this.attribute_state,
                         "birth": this.attribute_birth,
                         "zodiac": this.attribute_zodiac,
                         "constellation": this.attribute_constellation,
@@ -389,18 +386,147 @@ new Vue({
             this.sendSuccessMsg("配置已保存！")
         },
 
-        getState() {
-            let url = "http://127.0.0.1:5000/api/get-state";
+        // async processText() {
+        //     try {
+        //
+        //         const response = await axios.post('http://127.0.0.1:5000/process-text', {
+        //             text: this.inputText
+        // });
+        //
+        //     this.outputText = response.data.result;
+        //     } catch (error) {
+        //     console.error(error);
+        //     }
+        // },
+
+        // 加载图片
+        // getpicture() {
+        //     let url = "http://127.0.0.1:5000/receive-image";
+        //     // 创建一个新的XMLHttpRequest对象
+        //     const xhr = new XMLHttpRequest();
+        //     xhr.open("post", url)
+        //     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+        //     xhr.send()
+        //     // 监听请求的状态变化
+        //     xhr.onreadystatechange = function () {
+        //         if (xhr.readyState === 4) {
+        //             if (xhr.status === 200) {
+        //                 this.picture_url = url;
+        //                 console.log(this.picture_url);
+        //                 // // 当请求成功时，获取返回的图片数据
+        //                 // let imageData = xhr.response;
+        //                 //
+        //                 // // 将图片数据转换为DataURL
+        //                 // let imageBase64 = 'data:image/jpeg;base64,' + btoa(String.fromCharCode(...new Uint8Array(imageData)));
+        //                 //
+        //                 // // 将DataURL赋值给<img>标签的src属性，以显示图片
+        //                 // document.getElementById('image').src = imageBase64;
+        //             } else {
+        //                 // 当请求失败时，处理错误情况
+        //                 console.error('无法获取图片');
+        //             }
+        //         }
+        //     }
+        // },
+
+
+        getPicture() {
+            console.log(123);
+        },
+
+
+        // 加载文本
+        async getText() {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/get-text', {
+                    method: 'GET'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const textData = data.text;
+                    // const textPlaceholder = document.getElementById('text-placeholder');
+                    // textPlaceholder.innerText = textData;
+                    console.log(textData)
+                    console.log(textData.user_name)
+                    this.user_inform.name = textData.user_name;
+                    console.log(this.user_inform.user_name);
+                    // this.user_inform.gender = textData.user_gender;
+                    this.user_inform.gendr = response.data;
+                } else {
+                    console.error('Failed to fetch the text data.');
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        },
+    //     async getDataFromBackend() {
+    //         try {
+    //         // 发送异步请求获取后端数据
+    //         const response = await axios.get('http://127.0.0.1:5000/api/get-text');
+    //
+    //         // 更新数据到组件中，实现实时更新
+    //         this.user_name = response.data; // 假设后端返回的数据是一个字符串
+    //         } catch (error) {
+    //             console.error('Failed to get data from backend:', error);
+    //         }
+    // },
+
+        // 提交用户信息
+        postUserInform() {
+             let url = "http://127.0.0.1:5000/api/post-user-inform";
+             let send_data = {
+                  "user_name": this.user_inform.name,
+                  "user_gender": this.user_inform.gender,
+                  "user_age": this.user_inform.age,
+                  "user_type": this.user_inform.type,
+                  // "user_med_name":this.user_med_name,
+                  // "user_med_spec":this.user_med_spec,
+                  // "user_med_usage":this.user_med_usage,
+                  // "user_med_freq":this.user_med_freq,
+                  // "user_med_dosage":this.user_med_dosage,
+                  // "user_med_time":this.user_med_time
+             }
+             let xhr = new XMLHttpRequest()
+             xhr.open("post", url)
+             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+             xhr.send('data=' + JSON.stringify(send_data))
+             let executed = false
+             xhr.onreadystatechange = async function () {
+                if (!executed && xhr.status === 200) {
+                    try {
+                       let data = JSON.parse(xhr.responseText);
+                       console.log("data: " + data['result']);
+                        executed = true;
+                    } catch (e) {
+                    }
+                }
+            }
+        },
+
+
+        getLocation() {
+            let url = "http://127.0.0.1:5000/api/get-location";
             let xhr = new XMLHttpRequest();
-            xhr.open("post", url)
+            xhr.open("get", url)
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
             xhr.send()
             let executed = false
             xhr.onreadystatechange = async function () {
                 if (!executed && xhr.status === 200) {
-
+                    let location = eval("location");
+                    console.log(location);
+                    this.attribute_location = location;
                 }
             }
+        },
+
+        postLocation() {
+            let url = "http://127.0.0.1:5000/api/post-location";
+            let xhr = new XMLHttpRequest()
+            xhr.open("post", url)
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+            xhr.send()
         },
 
         postStartLive() {
@@ -591,7 +717,7 @@ new Vue({
                 }
             }
         },
-        addMsg(data){
+        addMsg(data){get
             let _this = this;
             let info = {
                 'content' : data['content'] ,
@@ -612,7 +738,7 @@ new Vue({
         getCurrentTime() {
             //获取当前时间并打印
             var _this = this;
-            let yy = new Date().getFullYear();
+            let yy = new Date().FullYear();
             let mm = new Date().getMonth()+1<10 ? '0'+parseInt(new Date().getMonth()+1) : new Date().getMonth()+1;
             let dd = new Date().getDate()<10 ? '0'+new Date().getDate() : new Date().getDate();
             let hh = new Date().getHours()<10 ? '0'+new Date().getHours() : new Date().getHours();

@@ -42,7 +42,7 @@ import platform
 if platform.system() == "Windows":
     import sys
     sys.path.append("test/ovr_lipsync")
-    from test_olipsync import LipSyncGenerator
+    # from test_olipsync import LipSyncGenerator
     
 from ai_module import nlp_lingju
 
