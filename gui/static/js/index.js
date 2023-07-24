@@ -645,8 +645,9 @@ new Vue({
                 'content' : text ,
                 'timetext' : _this.getCurrentTime() ,
                 'type' : 'member' ,
-                'way' : 'send' 
-            } 
+                'way' : 'send'
+            }
+            console.log(text)
             _this.msg_list.push(info);
             this.timer = setTimeout(()=>{   //设置延迟执行
                 //滚动条置底
@@ -659,21 +660,21 @@ new Vue({
                 "msg": text,
                 "sendto" : sendto
             };
-      
+
             let xhr = new XMLHttpRequest()
             xhr.open("post", url)
-            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-            xhr.send('data=' + encodeURIComponent(JSON.stringify(send_data)))
+            xhr.setRequestHeader("Content-type", "application/json")
+            xhr.send(JSON.stringify(send_data));
             let executed = false
             xhr.onreadystatechange = async function () {
                 if (!executed && xhr.status === 200) {
                   // _this.getMsgList()
                 //    document.querySelector('#textarea').value = '';
                 //    document.querySelector('#textarea').focus();
-                   
+
                 }
             }
-           
+
             // // text = text.replace(/\s/g, "<br/>");
             // text = text.replace(/\n/g, "<br/>");
             // text = text.replace(/\r\n/g, "<br/>");

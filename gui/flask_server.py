@@ -188,9 +188,12 @@ def api_stop_live():
 
 @__app.route('/api/send', methods=['post'])
 def api_send():
-    data = request.values.get('data')
-    info = json.loads(data)
-    text = fay_core.send_for_answer(info['msg'],info['sendto'])
+    # data = request.values.get('data')
+    # info = json.loads(data)
+    # text = fay_core.send_for_answer(info['msg'],info['sendto'])
+    data = request.json
+    # info = json.loads(data)
+    text = fay_core.send_for_answer(data['msg'], data['sendto'])
     return '{"result":"successful","msg":"'+text+'"}'
 
 

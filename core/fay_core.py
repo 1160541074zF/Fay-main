@@ -15,7 +15,7 @@ from openpyxl import load_workbook
 import numpy as np
 # import tensorflow as tf
 import fay_booter
-from ai_module import xf_ltp, tochat
+from ai_module import xf_ltp, tochat ,ecarechat
 from ai_module.ms_tts_sdk import Speech
 from ai_module.yuan1_0 import yuan1_0_dialog
 from core import wsa_server, tts_voice, song_player
@@ -62,29 +62,30 @@ def determine_nlp_strategy(sendto,msg):
     try:
         util.log(1, '自然语言处理...')
         tm = time.time()
-        cfg.load_config()
+        # cfg.load_config()
         if sendto == 1:
             text = nlp_VisualGLM.question(msg)
         if sendto == 2:
             text = tochat.question(msg)
         if sendto == 3:
-            text = tochat.question(msg)
+            text = ecarechat.question(msg)
+            print(text)
         else:
-            if cfg.key_chat_module == 'yuan':
-                text = yuan1_0_dialog.question(msg)
-            elif cfg.key_chat_module == 'chatgpt':
-                text = nlp_chatgpt.question(msg)
-            elif cfg.key_chat_module == 'rasa':
-                textlist = nlp_rasa.question(msg)
-                text = textlist[0]['text']
-            elif cfg.key_chat_module == "VisualGLM":
-                text = nlp_VisualGLM.question(msg)
-            elif cfg.key_chat_module == "lingju":
-                text = nlp_lingju.question(msg)
-            elif cfg.key_chat_module == "tochat":
-                text = tochat.question(msg)
-            else:
-                raise RuntimeError('语音交互配置错误')
+            # if cfg.key_chat_module == 'yuan':
+            #     text = yuan1_0_dialog.question(msg)
+            # elif cfg.key_chat_module == 'chatgpt':
+            #     text = nlp_chatgpt.question(msg)
+            # elif cfg.key_chat_module == 'rasa':
+            #     textlist = nlp_rasa.question(msg)
+            #     text = textlist[0]['text']
+            # elif cfg.key_chat_module == "VisualGLM":
+            #     text = nlp_VisualGLM.question(msg)
+            # elif cfg.key_chat_module == "lingju":
+            #     text = nlp_lingju.question(msg)
+            # elif cfg.key_chat_module == "tochat":
+            #     text = tochat.question(msg)
+            # else:
+            raise RuntimeError('语音交互配置错误')
         # if sendto == 2:
         #     text = nlp_chatgpt.question(msg)
         # else:
@@ -125,11 +126,13 @@ def send_for_answer(msg,sendto):
 
         # 全局问答
         if text is None:
-            answer = qa_service.question('qa',msg)
-            if answer is not None:
-                text = answer       
-            else:
-                text,textlist = determine_nlp_strategy(sendto,msg)
+            # answer = qa_service.question('qa',msg)
+            # print(answer)
+            # if answer is not None:
+            #     text = answer
+            # else:
+            text,textlist = determine_nlp_strategy(sendto,msg)
+
                 
         contentdb.add_content('fay','send',text)
         wsa_server.get_web_instance().add_cmd({"panelReply": {"type":"fay","content":text}})
