@@ -15,7 +15,7 @@ class Content_Db:
            
    
 
-    #初始化
+    # 初始化
     def init_db(self):
         conn = sqlite3.connect('fay.db')
         c = conn.cursor()

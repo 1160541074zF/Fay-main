@@ -53,10 +53,10 @@ new Vue({
                 gender: "",
                 age: "",
                 type:"",
-                location:"",
+                location: "",
                 coordinate:"",
                 sit_time:"",
-                lay_time:"",
+                data:"",
                 med_inform:{
                     name:"",
                     spec:"",
@@ -399,58 +399,95 @@ new Vue({
         //     }
         // },
 
+
         // 加载图片
-        // getpicture() {
-        //     let url = "http://127.0.0.1:5000/receive-image";
-        //     // 创建一个新的XMLHttpRequest对象
-        //     const xhr = new XMLHttpRequest();
-        //     xhr.open("post", url)
-        //     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-        //     xhr.send()
-        //     // 监听请求的状态变化
-        //     xhr.onreadystatechange = function () {
-        //         if (xhr.readyState === 4) {
-        //             if (xhr.status === 200) {
-        //                 this.picture_url = url;
-        //                 console.log(this.picture_url);
-        //                 // // 当请求成功时，获取返回的图片数据
-        //                 // let imageData = xhr.response;
-        //                 //
-        //                 // // 将图片数据转换为DataURL
-        //                 // let imageBase64 = 'data:image/jpeg;base64,' + btoa(String.fromCharCode(...new Uint8Array(imageData)));
-        //                 //
-        //                 // // 将DataURL赋值给<img>标签的src属性，以显示图片
-        //                 // document.getElementById('image').src = imageBase64;
-        //             } else {
-        //                 // 当请求失败时，处理错误情况
-        //                 console.error('无法获取图片');
-        //             }
-        //         }
-        //     }
-        // },
-
-
         getPicture() {
-            console.log(123);
+            let url = "http://127.0.0.1:5000/receive-image";
+            // 创建一个新的XMLHttpRequest对象
+            const xhr = new XMLHttpRequest();
+            xhr.open("post", url)
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+            xhr.send()
+            // 监听请求的状态变化
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        // this.picture_url = url;
+                        // console.log(this.picture_url);
+                        // 当请求成功时，获取返回的图片数据
+                        let imageData = xhr.response;
+
+                        // 将图片数据转换为DataURL
+                        let imageBase64 = 'data:image/jpeg;base64,' + btoa(String.fromCharCode(...new Uint8Array(imageData)));
+
+                        // 将DataURL赋值给<img>标签的src属性，以显示图片
+                        document.getElementById('image').src = imageBase64;
+                    } else {
+                        // 当请求失败时，处理错误情况
+                        console.error('无法获取图片');
+                    }
+                }
+            }
         },
 
 
-        // 加载文本
-        async getText() {
+        // refreshImage() {
+        //     // 获取图片的URL，这里可以通过 Ajax 或其他方式从后端获取新图片的URL
+        //     let imageUrl = "http://127.0.0.1:5000/receive-image";
+        //
+        //     // 更新图片的src属性，加载新的图片
+        //     document.getElementById("loadedImage").src = imageUrl + "?" + new Date().getTime();
+        // },
+
+
+
+              // 加载用药信息
+        async getMedcine(){
             try {
-                const response = await fetch('http://127.0.0.1:5000/api/get-text', {
+                const response = await fetch('http://127.0.0.1:5000/api/get-medcine', {
                     method: 'GET'
                 });
 
                 if (response.ok) {
-                    const data = await response.json();
-                    const textData = data.text;
+                    let data = await response.json();
+                    console.log(data)
+                    let textData = data.text;
+                     console.log(textData)
                     // const textPlaceholder = document.getElementById('text-placeholder');
                     // textPlaceholder.innerText = textData;
-                    console.log(textData)
-                    console.log(textData.user_name)
-                    this.user_inform.name = textData.user_name;
-                    console.log(this.user_inform.user_name);
+                    this.user_inform.med_inform.name = textData.med_name;
+                     this.user_inform.med_inform.spec = textData.med_spec;
+                     this.user_inform.med_inform.usage = textData.med_usage;
+                     this.user_inform.med_inform.freq = textData.med_freq;
+                     this.user_inform.med_inform.dosage = textData.med_dosage;
+                    console.log("用药信息"+this.user_inform.med_inform.name);
+                    // this.user_inform.gender = textData.user_gender;
+                    // this.user_inform.med_inform.name = response.data;
+                } else {
+                    console.error('Failed to fetch the text data.');
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        },
+
+        // 加载位置
+        async getLocation() {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/get-location', {
+                    method: 'GET'
+                });
+
+                if (response.ok) {
+                    let data = await response.json();
+                    console.log(data)
+                    let textData = data.text;
+                     console.log(textData)
+                    // const textPlaceholder = document.getElementById('text-placeholder');
+                    // textPlaceholder.innerText = textData;
+                    this.user_inform.location = textData.location;
+                     this.user_inform.coordinate = textData.coordinate;
+                    console.log(this.user_inform.location);
                     // this.user_inform.gender = textData.user_gender;
                     this.user_inform.gendr = response.data;
                 } else {
@@ -471,26 +508,30 @@ new Vue({
     //             console.error('Failed to get data from backend:', error);
     //         }
     // },
+        // 保存用户信息
+      postUserInform() {
+         const url = "http://127.0.0.1:5000/api/post-user-inform";
+         let data = {
+            kafka_ip: "8.130.108.7:9092",
+            topic_name: "reminder",
+            message: {
+                type: "voice",
+                content: {
+                    "user_name": this.user_inform.name,
+                    "user_gender": this.user_inform.gender,
+                    "user_age": this.user_inform.age,
+                    "user_type": this.user_inform.type,
+                }
+            },
+        };
+        const headers = {
+            'Content-Type': 'application/json'
+        };
 
-        // 提交用户信息
-        postUserInform() {
-             let url = "http://127.0.0.1:5000/api/post-user-inform";
-             let send_data = {
-                  "user_name": this.user_inform.name,
-                  "user_gender": this.user_inform.gender,
-                  "user_age": this.user_inform.age,
-                  "user_type": this.user_inform.type,
-                  // "user_med_name":this.user_med_name,
-                  // "user_med_spec":this.user_med_spec,
-                  // "user_med_usage":this.user_med_usage,
-                  // "user_med_freq":this.user_med_freq,
-                  // "user_med_dosage":this.user_med_dosage,
-                  // "user_med_time":this.user_med_time
-             }
-             let xhr = new XMLHttpRequest()
+        let xhr = new XMLHttpRequest()
              xhr.open("post", url)
              xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-             xhr.send('data=' + JSON.stringify(send_data))
+             xhr.send('data=' + JSON.stringify(data))
              let executed = false
              xhr.onreadystatechange = async function () {
                 if (!executed && xhr.status === 200) {
@@ -502,32 +543,169 @@ new Vue({
                     }
                 }
             }
-        },
 
+            console.log(data.message.content)
 
-        getLocation() {
-            let url = "http://127.0.0.1:5000/api/get-location";
-            let xhr = new XMLHttpRequest();
-            xhr.open("get", url)
-            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-            xhr.send()
-            let executed = false
-            xhr.onreadystatechange = async function () {
+        // fetch(url, {
+        //     method: 'POST',
+        //     headers: headers,
+        //     body: JSON.stringify(data)
+        // })
+        // .then(response => response.text())
+        // .then(data => console.log(data))
+        // .catch(error => console.error('Error:', error));
+      },
+
+           // 保存用药信息
+      postMedInform() {
+         const url = "http://127.0.0.1:5000/api/post-med-inform";
+         let data = {
+            kafka_ip: "8.130.108.7:9092",
+            topic_name: "reminder",
+            message: {
+                type: "voice",
+                content: {
+                    "med_name": this.user_inform.med_inform.name,
+                    "med_spec": this.user_inform.med_inform.spec,
+                    "med_usage": this.user_inform.med_inform.usage,
+                    "med_freq": this.user_inform.med_inform.freq,
+                    "med_dosage": this.user_inform.med_inform.dosage,
+                    "med_time": this.user_inform.med_inform.time,
+                }
+            },
+        };
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        let xhr = new XMLHttpRequest()
+             xhr.open("post", url)
+             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+             xhr.send('data=' + JSON.stringify(data))
+             let executed = false
+             xhr.onreadystatechange = async function () {
                 if (!executed && xhr.status === 200) {
-                    let location = eval("location");
-                    console.log(location);
-                    this.attribute_location = location;
+                    try {
+                       let data = JSON.parse(xhr.responseText);
+                       console.log("data: " + data['result']);
+                        executed = true;
+                    } catch (e) {
+                    }
                 }
             }
-        },
+            console.log(data.message.content)
 
-        postLocation() {
-            let url = "http://127.0.0.1:5000/api/post-location";
-            let xhr = new XMLHttpRequest()
-            xhr.open("post", url)
-            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-            xhr.send()
-        },
+        // fetch(url, {
+        //     method: 'POST',
+        //     headers: headers,
+        //     body: JSON.stringify(data)
+        // })
+        // .then(response => response.text())
+        // .then(data => console.log(data))
+        // .catch(error => console.error('Error:', error));
+      },
+              // 保存状态信息
+      postStateInform() {
+         const url = "http://127.0.0.1:5000/api/post-med-inform";
+         let data = {
+            kafka_ip: "8.130.108.7:9092",
+            topic_name: "reminder",
+            message: {
+                type: "voice",
+                content: {
+                    // "location": this.user_inform.location,
+                    // "coordinate": this.user_inform.coordinate,
+                    "sit_time": this.user_inform.sit_time,
+                }
+            },
+        };
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        let xhr = new XMLHttpRequest()
+             xhr.open("post", url)
+             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+             xhr.send('data=' + JSON.stringify(data))
+             let executed = false
+             xhr.onreadystatechange = async function () {
+                if (!executed && xhr.status === 200) {
+                    try {
+                       let data = JSON.parse(xhr.responseText);
+                       console.log("data: " + data['result']);
+                        executed = true;
+                    } catch (e) {
+                    }
+                }
+            }
+            console.log(data.message.content)
+
+        // fetch(url, {
+        //     method: 'POST',
+        //     headers: headers,
+        //     body: JSON.stringify(data)
+        // })
+        // .then(response => response.text())
+        // .then(data => console.log(data))
+        // .catch(error => console.error('Error:', error));
+      },
+
+        // 提交用户信息
+        // postUserInform() {
+        //      let url = "http://127.0.0.1:5000/api/post-user-inform";
+        //      let send_data = {
+        //           "user_name": this.user_inform.name,
+        //           "user_gender": this.user_inform.gender,
+        //           "user_age": this.user_inform.age,
+        //           "user_type": this.user_inform.type,
+        //           // "user_med_name":this.user_med_name,
+        //           // "user_med_spec":this.user_med_spec,
+        //           // "user_med_usage":this.user_med_usage,
+        //           // "user_med_freq":this.user_med_freq,
+        //           // "user_med_dosage":this.user_med_dosage,
+        //           // "user_med_time":this.user_med_time
+        //      }
+        //      let xhr = new XMLHttpRequest()
+        //      xhr.open("post", url)
+        //      xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+        //      xhr.send('data=' + JSON.stringify(send_data))
+        //      let executed = false
+        //      xhr.onreadystatechange = async function () {
+        //         if (!executed && xhr.status === 200) {
+        //             try {
+        //                let data = JSON.parse(xhr.responseText);
+        //                console.log("data: " + data['result']);
+        //                 executed = true;
+        //             } catch (e) {
+        //             }
+        //         }
+        //     }
+        // },
+
+
+        // getLocation() {
+        //     let url = "http://127.0.0.1:5000/api/get-location";
+        //     let xhr = new XMLHttpRequest();
+        //     xhr.open("get", url)
+        //     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+        //     xhr.send()
+        //     let executed = false
+        //     xhr.onreadystatechange = async function () {
+        //         if (!executed && xhr.status === 200) {
+        //             let location = eval("location");
+        //             console.log(location);
+        //             this.attribute_location = location;
+        //         }
+        //     }
+        // },
+
+        // postLocation() {
+        //     let url = "http://127.0.0.1:5000/api/post-location";
+        //     let xhr = new XMLHttpRequest()
+        //     xhr.open("post", url)
+        //     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+        //     xhr.send()
+        // },
 
         postStartLive() {
             this.postData()
@@ -738,13 +916,14 @@ new Vue({
         },
         getCurrentTime() {
             //获取当前时间并打印
-            var _this = this;
-            let yy = new Date().FullYear();
-            let mm = new Date().getMonth()+1<10 ? '0'+parseInt(new Date().getMonth()+1) : new Date().getMonth()+1;
-            let dd = new Date().getDate()<10 ? '0'+new Date().getDate() : new Date().getDate();
-            let hh = new Date().getHours()<10 ? '0'+new Date().getHours() : new Date().getHours();
-            let mf = new Date().getMinutes()<10 ? '0'+new Date().getMinutes() : new Date().getMinutes();
-            let ss = new Date().getSeconds()<10 ? '0'+new Date().getSeconds() : new Date().getSeconds();
+            let _this = this;
+            let current_date = new Date();
+            let yy = current_date.getFullYear();
+            let mm = current_date.getMonth()+1<10 ? '0'+parseInt(current_date.getMonth()+1) : current_date.getMonth()+1;
+            let dd = current_date.getDate()<10 ? '0'+current_date.getDate() : current_date.getDate();
+            let hh = current_date.getHours()<10 ? '0'+current_date.getHours() : current_date.getHours();
+            let mf = current_date.getMinutes()<10 ? '0'+current_date.getMinutes() : current_date.getMinutes();
+            let ss = current_date.getSeconds()<10 ? '0'+current_date.getSeconds() : current_date.getSeconds();
             let gettime = yy+'-'+mm+'-'+dd+' '+hh+':'+mf+':'+ss;
             return gettime;
            

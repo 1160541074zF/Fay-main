@@ -31,7 +31,7 @@
             <div class="main_box">
                 <div class="left">
                     <div class="left_top">
-                        <p class="left_top_p">成员注册：</p>
+                        <p class="left_top_p">成员信息：</p>
                         <div class="character">
                             <div class="character_top">
                                 <div class="character_left">
@@ -48,11 +48,12 @@
 {#                                            #}
 {#                                        </div>#}
                                         <div class="character_right">
+
                                             <li>用户头像：</li>
+<!--                                            <img src="http://127.0.0.1:5000/receive-image" alt="Loaded Image">-->
                                             <img src="{{ url_for('static',filename='source/img/picture.jpg') }}" width="200" height="150" alt="图片" />
                                         </div>
                                           <li>
-
                                             <p>姓名：</p>
                                             <el-input v-model="user_inform.name" placeholder="请输入内容"></el-input>
                                         </li>
@@ -68,102 +69,95 @@
                                             <p>用户类型：</p>
                                             <el-input v-model="user_inform.type" placeholder="请输入内容"></el-input>
                                         </li>
-                                       <el-button type="button" style="width:100px" @click=postUserInform()>保存</el-button>
-                                        <el-button type="button" style="width:100px" @click=getText()>刷新</el-button>
-                                         <el-button type="button" style="width:100px" @click=getPicture()>刷新图片</el-button>
-                                        <li>
-{#                                            <p>生日：</p>#}
-{#                                            <el-input v-model="attribute_birth" placeholder="请输入内容"></el-input>#}
-{#                                        </li>#}
-{#                                        <li>#}
-{#                                            <p>生肖：</p>#}
-{#                                            <el-input v-model="attribute_zodiac" placeholder="请输入内容"></el-input>#}
-{#                                        </li>#}
-{#                                        <li>#}
-{#                                            <p>星座：</p>#}
-{#                                            <el-input v-model="attribute_constellation" placeholder="请输入内容"></el-input>#}
-{#                                        </li>#}
-{#                                        <li>#}
-{#                                            <p>职业：</p>#}
-{#                                            <el-input v-model="attribute_job" placeholder="请输入内容"></el-input>#}
-{#                                        </li>#}
-{#                                        <li>#}
-{#                                            <p>联系方式：</p>#}
-{#                                            <el-input v-model="attribute_contact" placeholder="请输入内容"></el-input>#}
-{#                                        </li>#}
-{#                                        <li>#}
-{#                                            <p>喜好：</p>#}
-{#                                            <el-input v-model="attribute_hobby" placeholder="请输入内容"></el-input>#}
-{#                                        </li>#}
+                                        <div>
+                                                 <el-button type="button" style="width:100px" @click=postUserInform()>保存</el-button>
+<!--                                        <el-button type="button" style="width:100px;height: 40px" @click=getText()>刷新</el-button>-->
+                                         <el-button type="button" style="width:100px;height: 40px" @click=getPicture()>刷新图片</el-button>
+                                            </div>
+<!--                                        <li>-->
+<!--{#                                            <p>生日：</p>#}-->
+<!--{#                                            <el-input v-model="attribute_birth" placeholder="请输入内容"></el-input>#}-->
+<!--{#                                        </li>#}-->
+<!--{#                                        <li>#}-->
+<!--{#                                            <p>生肖：</p>#}-->
+<!--{#                                            <el-input v-model="attribute_zodiac" placeholder="请输入内容"></el-input>#}-->
+<!--{#                                        </li>#}-->
+<!--{#                                        <li>#}-->
+<!--{#                                            <p>星座：</p>#}-->
+<!--{#                                            <el-input v-model="attribute_constellation" placeholder="请输入内容"></el-input>#}-->
+<!--{#                                        </li>#}-->
+<!--{#                                        <li>#}-->
+<!--{#                                            <p>职业：</p>#}-->
+<!--{#                                            <el-input v-model="attribute_job" placeholder="请输入内容"></el-input>#}-->
+<!--{#                                        </li>#}-->
+<!--{#                                        <li>#}-->
+<!--{#                                            <p>联系方式：</p>#}-->
+<!--{#                                            <el-input v-model="attribute_contact" placeholder="请输入内容"></el-input>#}-->
+<!--{#                                        </li>#}-->
+<!--{#                                        <li>#}-->
+<!--{#                                            <p>喜好：</p>#}-->
+<!--{#                                            <el-input v-model="attribute_hobby" placeholder="请输入内容"></el-input>#}-->
+<!--{#                                        </li>#}-->
                                     </ul>
                                 </div>
                                 <div class="character_right">
                                     <ul>
 {#                                        <li style="width: 375px;">#}
-                                          <li>
-                                            <p>位置：</p>
-                                            <el-input v-model="user_inform.location" placeholder="请输入内容"></el-input>
-                                        </li>
-                                          <li>
-                                            <p>坐标：</p>
-                                            <el-input v-model="user_inform.coordinate" placeholder="请输入内容"></el-input>
-                                        </li>
-                                         <li>
-                                            <p>久坐时间：</p>
-                                            <el-input v-model="user_inform.sit_time" placeholder="请输入内容"></el-input>
-                                        </li>
-                                         <li>
+                                         <li>用药信息：</li>
+                                         <li style="margin-bottom: 10px;">
                                             <p>药品名：</p>
                                             <el-input v-model="user_inform.med_inform.name" placeholder="请输入内容"></el-input>
                                         </li>
-                                          <li>
+                                          <li style="margin-bottom: 10px;">
                                             <p>规格：</p>
                                             <el-input v-model="user_inform.med_inform.spec" placeholder="请输入内容"></el-input>
-                                        </li>  <li>
+                                        </li>  <li style="margin-bottom: 10px;">
                                             <p>用法：</p>
                                             <el-input v-model="user_inform.med_inform.usage" placeholder="请输入内容"></el-input>
-                                        </li>  <li>
+                                        </li>  <li style="margin-bottom: 10px;">
                                             <p>用量：</p>
                                             <el-input v-model="user_inform.med_inform.dosage" placeholder="请输入内容"></el-input>
                                         </li>
-                                          <li>
+                                          <li style="margin-bottom: 10px;">
                                             <p>频率：</p>
                                             <el-input v-model="user_inform.med_inform.freq" placeholder="请输入内容"></el-input>
                                         </li>
-                                          <li>
+                                          <li style="margin-bottom: 10px;">
                                             <p>用药时间：</p>
                                             <el-input v-model="user_inform.med_inform.time" placeholder="请输入内容"></el-input>
                                         </li>
-{#                                            <p>Q&A文件：</p>#}
-{#                                            <el-input v-model="interact_QnA" placeholder="请输入内容"></el-input>#}
-{#                                        </li>#}
-{#                                        <br>#}
-{#                                        <li>#}
-{#                                            <p>使用面板播放：</p>#}
-{#                                            <el-switch v-model="play_sound_enabled" active-color="#13ce66"#}
-{#                                                inactive-color="#ff4949">#}
-{#                                            </el-switch>#}
-{#                                        </li>#}
-{#                                        <br>#}
-{#                                        <li>#}
-{#                                            <p>声音选择：{{attribute_voice}}</p>#}
-{#                                            <el-select v-model="attribute_voice" placeholder="请选择">#}
-{#                                                <el-option v-for="item in voice_list" :key="item.value"#}
-{#                                                    :label="item.label" :value="item.value">#}
-{#                                                </el-option>#}
-{#                                            </el-select>#}
-{#                                        </li>#}
-{#                                        <br>#}
-{#                                        <li>#}
-{#                                            <p>敏感度：</p>#}
-{#                                            <el-slider v-model="interact_perception_follow"></el-slider>#}
-{#                                        </li>#}
-{##}
-{#                                        <br>#}
-{#                                        <li >#}
-{#                                             <el-button style="margin-left: 55px;width: 135px;"  type="success"  class="btn_open"#}
-{#                                             @click=postControlEyes()><i class="fas fa-eye"></i> Fay Eyes</el-button>#}
-{#                                        </li>#}
+                                        <el-button type="button" style="width:100px ;height: 40px" @click=postMedInform()>保存</el-button>
+                                        <el-button type="button" style="width:100px ;height: 40px" @click="getMedcine()">刷新</el-button>
+<!--{#                                            <p>Q&A文件：</p>#}-->
+<!--{#                                            <el-input v-model="interact_QnA" placeholder="请输入内容"></el-input>#}-->
+<!--{#                                        </li>#}-->
+<!--{#                                        <br>#}-->
+<!--{#                                        <li>#}-->
+<!--{#                                            <p>使用面板播放：</p>#}-->
+<!--{#                                            <el-switch v-model="play_sound_enabled" active-color="#13ce66"#}-->
+<!--{#                                                inactive-color="#ff4949">#}-->
+<!--{#                                            </el-switch>#}-->
+<!--{#                                        </li>#}-->
+<!--{#                                        <br>#}-->
+<!--{#                                        <li>#}-->
+<!--{#                                            <p>声音选择：{{attribute_voice}}</p>#}-->
+<!--{#                                            <el-select v-model="attribute_voice" placeholder="请选择">#}-->
+<!--{#                                                <el-option v-for="item in voice_list" :key="item.value"#}-->
+<!--{#                                                    :label="item.label" :value="item.value">#}-->
+<!--{#                                                </el-option>#}-->
+<!--{#                                            </el-select>#}-->
+<!--{#                                        </li>#}-->
+<!--{#                                        <br>#}-->
+<!--{#                                        <li>#}-->
+<!--{#                                            <p>敏感度：</p>#}-->
+<!--{#                                            <el-slider v-model="interact_perception_follow"></el-slider>#}-->
+<!--{#                                        </li>#}-->
+<!--{##}-->
+<!--{#                                        <br>#}-->
+<!--{#                                        <li >#}-->
+<!--{#                                             <el-button style="margin-left: 55px;width: 135px;"  type="success"  class="btn_open"#}-->
+<!--{#                                             @click=postControlEyes()><i class="fas fa-eye"></i> Fay Eyes</el-button>#}-->
+<!--{#                                        </li>#}-->
                                     </ul>
                                 </div>
                             </div>
@@ -171,40 +165,58 @@
                         </div>
                     </div>
                     <div class="left_box">
-                        <p>&nbsp;</p>
+                        <p>&nbsp;用户状态</p>
                         <div class="source">
                             <ul>
-                                
-                                <li class="url">
-                                    <el-switch v-model="source_record_enabled" active-color="#13ce66"
-                                        inactive-color="#ff4949">
-                                    </el-switch>
-                                    <p>麦克风</p>
-                                    <el-select v-model="source_record_device" placeholder="请选择">
-                                        <el-option v-for="item in device_list" :key="item.value" :label="item.label"
-                                            :value="item.value">
-                                        </el-option>
-                                    </el-select>
-                                </li>
-                                <li class="url">
+                                <div class="character_left">
+                                    <li>
+                                     <p>位置：</p>
+                                     <el-input v-model="user_inform.location" placeholder="请输入内容" style="width: 375px;"></el-input>
+                                    </li>
+                                    <li>
+                                     <p>坐标：</p>
+                                     <el-input v-model="user_inform.coordinate" placeholder="请输入内容" style="width: 375px;"></el-input>
+                                    </li>
+                                    <li>
+                                     <p>久坐时间：</p>
+                                     <el-input v-model="user_inform.sit_time" placeholder="请输入内容" style="width: 375px;"></el-input>
+                                    </li>
 
-                                    <p style="margin-left: 40px">消 息</p>
-                                    <el-input v-model="panel_msg" :disabled="true"></el-input>
-                                </li>
-                                <li class="but">
-                                    <el-button v-if="live_state == 1" type="success" class="btn_close"
-                                        style="width:200px" @click=postStopLive()>关闭（运行中）</el-button>
-                                    <el-button v-else-if="live_state == 2" type="primary" plain disabled
-                                        style="width:200px">正在开启...</el-button>
-                                    <el-button v-else-if="live_state == 3" type="success" plain disabled
-                                        style="width:200px">正在关闭...</el-button>
-                                    <el-button v-else type="primary" style="width:200px" class="btn_open"
-                                        @click=postStartLive()>开启</el-button>
-                                    <el-button type="button" style="width:200px" @click=postData()>保存配置</el-button>
-                                </li>
-                                <li class="p_red">
-                                    <p>注：启动后请选中场景客户端，让其前端运行，否则可能会卡顿，或者无声音。</p>
-                                </li>
+                                </div>
+                                 <el-button type="button" style="width:100px;height: 40px" @click=postStateInform()>保存</el-button>
+                                        <el-button type="button" style="width:100px;height: 40px" @click=getLocation()>刷新</el-button>
+
+<!--                                <li class="url">-->
+
+<!--                                    <el-switch v-model="source_record_enabled" active-color="#13ce66"-->
+<!--                                        inactive-color="#ff4949">-->
+<!--                                    </el-switch>-->
+<!--                                    <p>麦克风</p>-->
+<!--                                    <el-select v-model="source_record_device" placeholder="请选择">-->
+<!--                                        <el-option v-for="item in device_list" :key="item.value" :label="item.label"-->
+<!--                                            :value="item.value">-->
+<!--                                        </el-option>-->
+<!--                                    </el-select>-->
+<!--                                </li>-->
+<!--                                <li class="url">-->
+
+<!--                                    <p style="margin-left: 40px">消 息</p>-->
+<!--                                    <el-input v-model="panel_msg" :disabled="true"></el-input>-->
+<!--                                </li>-->
+<!--                                <li class="but">-->
+<!--                                    <el-button v-if="live_state == 1" type="success" class="btn_close"-->
+<!--                                        style="width:200px" @click=postStopLive()>关闭（运行中）</el-button>-->
+<!--                                    <el-button v-else-if="live_state == 2" type="primary" plain disabled-->
+<!--                                        style="width:200px">正在开启...</el-button>-->
+<!--                                    <el-button v-else-if="live_state == 3" type="success" plain disabled-->
+<!--                                        style="width:200px">正在关闭...</el-button>-->
+<!--                                    <el-button v-else type="primary" style="width:200px" class="btn_open"-->
+<!--                                        @click=postStartLive()>开启</el-button>-->
+<!--                                    <el-button type="button" style="width:200px" @click=postData()>保存配置</el-button>-->
+<!--                                </li>-->
+<!--                                <li class="p_red">-->
+<!--                                    <p>注：启动后请选中场景客户端，让其前端运行，否则可能会卡顿，或者无声音。</p>-->
+<!--                                </li>-->
                             </ul>
                         </div>
                     </div>

@@ -418,3 +418,16 @@ textarea {
     background: rgba(0, 0, 0, 0);
     -webkit-box-shadow: inset006pxrgba(0, 0, 0, 0.5);
 }
+
+/* index.css or your custom CSS file */
+.character_left {
+  display: grid;
+  /* 设置竖直方向的行高 */
+  grid-auto-rows: min-content;
+  /* 可选：设置竖直方向的间距 */
+  gap: 10px;
+}
+
+.vertical-inputs {
+  display: contents;
+}

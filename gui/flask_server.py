@@ -40,10 +40,6 @@ def __get_device_list():
 
 
 
-
-
-
-
 @__app.route("/robot/send_msg", methods=["POST"])
 def receive_message():
     payload = request.json
@@ -76,8 +72,38 @@ def api_submit():
     return '{"result":"successful"}'
 
 
+# 在这里配置 Kafka 的连接信息
+kafka_ip = "192.168.3.15:9092"
+kafka_topic = "reminder"
+
+@__app.route('/robot/send_msg', methods=['POST'])
+def send_message_to_kafka():
+    try:
+        data = request.get_json()
+        kafka_ip = data.get("kafka_ip")
+        kafka_topic = data.get("topic_name")
+        message_type = data.get("message", {}).get("type", "")
+        message_content = data.get("message", {}).get("content", "")
+
+        # 创建 Kafka 生产者对象
+        producer = KafkaProducer(bootstrap_servers=kafka_ip)
+
+        # 将消息发送到 Kafka
+        producer.send(kafka_topic, key=message_type.encode(), value=message_content.encode())
+
+        # 关闭 Kafka 生产者
+        producer.close()
+
+        response = {"status": "success", "message": "Message sent to Kafka successfully."}
+        return jsonify(response), 200
+
+    except Exception as e:
+        response = {"status": "error", "message": str(e)}
+        return jsonify(response), 500
+
+
 # 接收图片
-@__app.route('/receive-image', methods=['POST'])
+@__app.route('/receive-image', methods=['GET'])
 def receive_image():
     try:
         # 获取POST请求中的JSON数据，其中包含Base64编码的图片数据
@@ -88,14 +114,13 @@ def receive_image():
         # image_base64 = data['image_base64']
         # print(image_base64)
 
-
         if 'image_base64' in data:
             # 提取Base64编码的图片数据
             image_base64 = data.get("image_base64")
 
             # 将Base64编码转换为图片文件
             image_data = base64.b64decode(image_base64)
-            # print(image_data)
+            print(image_data)
             image_url = "C:/学习/项目/Fay-main/gui/templates/picture.jpg"  # 设置图片保存路径
             with open(image_url, 'wb') as f:
                 f.write(image_data)
@@ -105,7 +130,8 @@ def receive_image():
             # txt_file_url = "C:/Users/11605/Desktop/base64_data.txt"  # 设置 txt 文件保存路径
             # with open(txt_file_url, 'w') as f:  # 将写入模式改为文本写入模式
             #     f.write(image_data.decode('utf-8'))  # 将二进制数据写入到 txt 文件中
-            # 返回图片文件的URL给前端
+                # 返回图片文件的URL给前端
+                # return jsonify({"status": "success", "image_url": "/static/picture.jpg"})
             # image_url = f'http://127.0.0.1:5000/{image_path}'  # 设置图片文件在服务器上的访问URL
             return jsonify({"status": "success", "image_data": "图片接收成功"})
 
@@ -117,25 +143,42 @@ def receive_image():
     except Exception as e:
         return jsonify({"status": "error", "message": "图片接收失败", "error": str(e)})
 
-
-# 加载文本
-@__app.route('/api/get-text', methods=['GET'])
-def process_text():
-    text_data = {
-        'user_name': "张三",
-        'user_gender': "男",
+# 加载位置信息
+@__app.route('/api/get-location', methods=['GET'])
+def get_location():
+    location_data = {
+        # 'user_name': "张三",
+        # 'user_gender': "男",
+        "location": "卧室 ",
+        "coordinate": "x: 0.531435847282 , y: 1.22645330429, z: 0.0,x: 0.0,y: 0.0,z: -0.0285912500452,w: 0.999591186646"
     }
-    return jsonify({"text": text_data})
+    return jsonify({"text": location_data})
+
+# 加载用药信息
+@__app.route('/api/get-medcine', methods=['GET'])
+def get_medcine():
+    med_data = {
+        'med_name': "头孢",
+        'med_spec': "50mg*6袋",
+        'med_usage': "口服",
+        'med_freq': "2次/天",
+        'med_dosage': "50mg",
+    }
+    return jsonify({"text": med_data})
 
 
-@__app.route('/api/robot_data', methods=['POST'])
+
+
+# 接收位置
+@__app.route('/api/sent_pose', methods=['POST'])
 def get_robot_data():
     data = request.get_json()  # 获取 POST 请求中的 JSON 数据
+    print(data)
     response_data = {'message': 'Data received successfully'}
     return jsonify(response_data)
 
 
-# 提交用户信息
+# 保存用户信息
 @__app.route('/api/post-user-inform', methods=['post'])
 def api_post_user_inform():
     data = request.values.get('data')
@@ -144,6 +187,25 @@ def api_post_user_inform():
 
     return config_data
 
+
+# 保存用药信息
+@__app.route('/api/post-med-inform', methods=['post'])
+def api_post_med_inform():
+    data = request.values.get('data')
+    print(data)
+    config_data = json.loads(data)
+
+    return config_data
+
+
+# 保存状态信息
+@__app.route('/api/post-state-inform', methods=['post'])
+def api_post_state_inform():
+    data = request.values.get('data')
+    print(data)
+    config_data = json.loads(data)
+
+    return config_data
 
 # @__app.route('/api/control-eyes', methods=['post'])
 # def control_eyes():
