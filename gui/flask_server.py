@@ -16,8 +16,8 @@ from utils import config_util, util
 from core import wsa_server
 from core import fay_core
 from core.content_db import Content_Db
+from robot import client
 from ai_module import yolov8
-
 
 __app = Flask(__name__)
 CORS(__app, supports_credentials=True)
@@ -25,6 +25,7 @@ CORS(__app, supports_credentials=True)
 
 def __get_template():
     return render_template('index.html')
+
 
 # 设备列表
 def __get_device_list():
@@ -36,6 +37,25 @@ def __get_device_list():
             device_list.append(devInfo["name"])
     
     return list(set(device_list))
+
+
+
+
+
+
+
+@__app.route("/robot/send_msg", methods=["POST"])
+def receive_message():
+    payload = request.json
+    kafka_ip = payload["kafka_ip"]
+    topic_name = payload["topic_name"]
+    message = payload["message"]
+
+    # Process to send message
+    client.send_message_to_kafka(kafka_ip, topic_name, message)
+    response = {'message': 'send successfully'}
+    return jsonify(response), 200  # 返回响应和状态码
+
 
 
 @__app.route('/api/submit', methods=['post'])
