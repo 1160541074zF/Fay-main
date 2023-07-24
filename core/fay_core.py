@@ -67,6 +67,8 @@ def determine_nlp_strategy(sendto,msg):
             text = nlp_VisualGLM.question(msg)
         if sendto == 2:
             text = tochat.question(msg)
+        if sendto == 3:
+            text = tochat.question(msg)
         else:
             if cfg.key_chat_module == 'yuan':
                 text = yuan1_0_dialog.question(msg)

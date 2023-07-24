@@ -217,7 +217,7 @@
                                 <div class="item item-center"><span>[[item.timetext]]</span></div>
 
                                 <div class="item item-left" v-if="item.type == 'fay'">
-                                    <div class="avatar"><img src="{{ url_for('static',filename='to.jpg') }}" />
+                                    <div class="avatar"><img src="{{ url_for('static',filename='to.png') }}" />
                                     </div>
                                     <div class="bubble bubble-left">[[item.content]]
                                     </div>
@@ -238,9 +238,12 @@
                                 <textarea v-model="send_msg" name="text" id="textarea" placeholder="发送些内容给Fay..."></textarea>
                                 <div class="button-area">
                                     <button id="send-btn" @click="send(2)">Fay</button>
+<!--                                    <button id="send-btn" @click="send(3)">连续对话</button>-->
+
+
                                     
                                     <!-- <button id="send-btn" @click="send(2)" style="margin-left: 25px;">ChatGPT</button> -->
-                                    
+
                                 </div>
                             </div>
                         </div>
