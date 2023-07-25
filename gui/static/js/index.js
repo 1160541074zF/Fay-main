@@ -59,6 +59,7 @@ new Vue({
                 data:"",
                 med_inform:{
                     name:"",
+                    num:"",
                     spec:"",
                     usage:"",
                     freq:"",
@@ -442,33 +443,49 @@ new Vue({
 
 
               // 加载用药信息
-        async getMedcine(){
-            try {
-                const response = await fetch('http://127.0.0.1:5000/api/get-medcine', {
-                    method: 'GET'
-                });
-
-                if (response.ok) {
-                    let data = await response.json();
-                    console.log(data)
-                    let textData = data.text;
-                     console.log(textData)
-                    // const textPlaceholder = document.getElementById('text-placeholder');
-                    // textPlaceholder.innerText = textData;
-                    this.user_inform.med_inform.name = textData.med_name;
-                     this.user_inform.med_inform.spec = textData.med_spec;
-                     this.user_inform.med_inform.usage = textData.med_usage;
-                     this.user_inform.med_inform.freq = textData.med_freq;
-                     this.user_inform.med_inform.dosage = textData.med_dosage;
-                    console.log("用药信息"+this.user_inform.med_inform.name);
-                    // this.user_inform.gender = textData.user_gender;
-                    // this.user_inform.med_inform.name = response.data;
-                } else {
-                    console.error('Failed to fetch the text data.');
-                }
-            } catch (error) {
-                console.error(error);
-            }
+        async getMedicine(){
+             // 使用AJAX发送GET请求获取用药信息
+                fetch('/get-medicine')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            this.user_inform.med_inform = data.data;
+                            console.log(data.data)
+                            console.log(this.user_inform.med_inform)
+                        } else {
+                            console.error('无法获取用药信息：' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('请求错误：', error);
+                    });
+            // try {
+            //     const response = await fetch('http://127.0.0.1:5000/get-medicine', {
+            //         method: 'GET'
+            //     });
+            //
+            //     if (response.ok) {
+            //         let data = await response.json();
+            //         console.log(data)
+            //         let textData = data.text;
+            //          console.log(textData)
+            //
+            //         // const textPlaceholder = document.getElementById('text-placeholder');
+            //         // textPlaceholder.innerText = textData;
+            //         this.user_inform.med_inform.name = textData.med_name;
+            //          this.user_inform.med_inform.spec = textData.med_spec;
+            //          this.user_inform.med_inform.usage = textData.med_usage;
+            //          this.user_inform.med_inform.freq = textData.med_freq;
+            //          this.user_inform.med_inform.dosage = textData.med_dosage;
+            //         console.log("用药信息"+this.user_inform.med_inform.name);
+            //         // this.user_inform.gender = textData.user_gender;
+            //         // this.user_inform.med_inform.name = response.data;
+            //     } else {
+            //         console.error('Failed to fetch the text data.');
+            //     }
+            // } catch (error) {
+            //     console.error(error);
+            // }
         },
 
         // 加载位置
@@ -618,50 +635,54 @@ new Vue({
         .then(data => console.log(data))
         .catch(error => console.error('Error:', error));
       },
-              // 保存状态信息
+              // 保存位置信息
       postStateInform() {
-         const url = "http://127.0.0.1:5000/api/post-med-inform";
-         let data = {
-            kafka_ip: "8.130.108.7:9092",
-            topic_name: "reminder",
-            message: {
-                type: "voice",
-                content: {
-                    // "location": this.user_inform.location,
-                    // "coordinate": this.user_inform.coordinate,
-                    "sit_time": this.user_inform.sit_time,
-                }
-            },
-        };
-        const headers = {
-            'Content-Type': 'application/json'
-        };
+         const url = "http://127.0.0.1:5000/save-location-info";
+         // let data = {
+         //    kafka_ip: "8.130.108.7:9092",
+         //    topic_name: "reminder",
+         //    message: {
+         //        type: "voice",
+         //        content: {
+         //            "location": this.user_inform.location,
+         //            "coordinate": this.user_inform.coordinate,
+         //            "sit_time": this.user_inform.sit_time,
+         //        }
+         //    },
+        // };
+          let data = {
+              "location": this.user_inform.location,
+              "coordinate": this.user_inform.coordinate,
+          }
+          const headers = {
+              'Content-Type': 'application/json'
+          };
 
-        let xhr = new XMLHttpRequest()
-             xhr.open("post", url)
-             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-             xhr.send('data=' + JSON.stringify(data))
-             let executed = false
-             xhr.onreadystatechange = async function () {
-                if (!executed && xhr.status === 200) {
-                    try {
-                       let data = JSON.parse(xhr.responseText);
-                       console.log("data: " + data['result']);
-                        executed = true;
-                    } catch (e) {
-                    }
-                }
-            }
-            console.log(data.message.content)
+          // let xhr = new XMLHttpRequest()
+          //      xhr.open("post", url)
+          //      xhr.setRequestHeader("Content-type", "application/json")
+          //      xhr.send('data=' + JSON.stringify(data))
+          //      let executed = false
+          //      xhr.onreadystatechange = async function () {
+          //         if (!executed && xhr.status === 200) {
+          //             try {
+          //                let data = JSON.parse(xhr.responseText);
+          //                console.log("data: " + data['result']);
+          //                 executed = true;
+          //             } catch (e) {
+          //             }
+          //         }
+          //     }
+          //     console.log(data)
 
-        // fetch(url, {
-        //     method: 'POST',
-        //     headers: headers,
-        //     body: JSON.stringify(data)
-        // })
-        // .then(response => response.text())
-        // .then(data => console.log(data))
-        // .catch(error => console.error('Error:', error));
+        fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(data)
+        })
+        .then(response => response.text())
+        .then(data => console.log(data))
+        .catch(error => console.error('Error:', error));
       },
 
         // 提交用户信息

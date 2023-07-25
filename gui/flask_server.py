@@ -41,6 +41,148 @@ def __get_device_list():
     return list(set(device_list))
 
 
+@__app.route('/api/get-medicine', methods=['POST'])
+def receive_data():
+    try:
+        # 从请求中获取JSON数据
+        data = request.get_json()
+        print(data)
+        # 检查是否包含所需的键
+        if all(key in data for key in ['med_name', 'med_spec', 'med_usage', 'med_freq', 'med_dosage', 'med_num']):
+            med_name = data['med_name']
+            print(med_name)
+            med_spec = data['med_spec']
+            print(med_spec)
+            med_usage = data['med_usage']
+            med_freq = data['med_freq']
+            med_dosage = data['med_dosage']
+            med_num = data['med_num']
+
+            # 在这里进行数据处理或数据库操作
+            # 设置SQLite数据库连接
+            conn = sqlite3.connect('fay.db')
+            print(conn)
+            cursor = conn.cursor()
+            print(cursor)
+
+            # 插入数据到数据库
+            cursor.execute('''INSERT INTO med_inform (med_name, med_spec, med_usage, med_freq, med_dosage, med_num)
+                                         VALUES (?, ?, ?, ?, ?, ?)''',
+                           (med_name, med_spec, med_usage, med_freq, med_dosage, med_num))
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            response = {
+                "status": "success",
+                "message": "成功接收并处理数据",
+                # "data": {
+                #     "med_name": med_name,
+                #     "med_spec": med_spec,
+                #     "med_usage": med_usage,
+                #     "med_freq": med_freq,
+                #     "med_dosage": med_dosage,
+                #     "med_num": med_dosage
+                # }
+            }
+        else:
+            response = {
+                "status": "error",
+                "message": "数据格式不正确，请提供所有必需的键名：med_name、med_spec、med_usage、med_freq、med_dosage、med_num"
+            }
+
+        return jsonify(response)
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+
+# 加载用药信息
+# @__app.route('/get-medicine', methods=['GET'])
+# def get_medicine():
+#     # try:
+#         # 设置SQLite数据库连接
+#         conn = sqlite3.connect('fay.db')
+#         cursor = conn.cursor()
+#         # 假设要获取id为1的药物信息
+#         med_id = 1
+#
+#         # 从数据库中获取指定id的药物信息
+#         cursor.execute('''SELECT * FROM med_inform WHERE id = ?''', (med_id))
+#         row = cursor.fetchone()
+#         print(row)
+#
+#         # 关闭数据库连接
+#         conn.close()
+#
+#         # 如果存在指定id的药物信息，则将其转换为字典
+#         if row is not None:
+#             med_dict = {
+#                 "med_name": row[0],
+#                 "med_spec": row[1],
+#                 "med_usage": row[2],
+#                 "med_freq": row[3],
+#                 "med_dosage": row[4],
+#                 # "med_num": row[5]
+#             }
+#             print(med_dict)  # 输出指定id的药物信息
+#         else:
+#             print("未找到指定id的药物信息")
+#
+#         # 将字典列表转换为JSON格式的字符串
+#         response_json_str = json.dumps({"status": "success", "data": med_dict})
+#
+#         # 返回JSON字符串
+#         return response_json_str
+
+    # except Exception as e:
+    #     return jsonify({"status": "error", "message": str(e)})
+
+@__app.route('/api/get-medicine', methods=['GET'])
+def get_medicine_by_id():
+    try:
+        # 连接SQLite数据库
+        conn = sqlite3.connect('fay.db')
+        cursor = conn.cursor()
+
+        med_id = 2
+        # 从数据库中获取特定id的用药信息
+        cursor.execute('SELECT * FROM med_inform WHERE id = ?', (med_id,))
+        row = cursor.fetchone()
+
+        # 关闭数据库连接
+        cursor.close()
+        conn.close()
+
+        # 将查询结果转换为字典
+
+        if row:
+            med_dict = {
+                "med_name": row[1],
+                "med_spec": row[2],
+                "med_usage": row[3],
+                "med_freq": row[4],
+                "med_dosage": row[5],
+                "time": row[6]
+            }
+            response = {
+                "status": "success",
+                "data": med_dict
+
+            }
+        else:
+            response = {
+                "status": "error",
+                "message": "未找到该用药信息"
+            }
+
+        # 将字典转换为JSON格式的响应并返回
+        return jsonify(response)
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+
 
 @__app.route("/robot/send_msg", methods=["POST"])
 def receive_message():
@@ -51,18 +193,6 @@ def receive_message():
 
     # Process to send message
     client.send_message_to_kafka(kafka_ip, topic_name, message)
-    response = {'message': 'send successfully'}
-    return jsonify(response), 200  # 返回响应和状态码
-
-@__app.route("/robot/control", methods=["POST"])
-def send_control():
-    payload = request.json
-    kafka_ip = payload["kafka_ip"]
-    topic_name = payload["topic_name"]
-    command = payload["command"]
-
-    # Process to send message
-    client.send_sport_robot(kafka_ip, topic_name, command)
     response = {'message': 'send successfully'}
     return jsonify(response), 200  # 返回响应和状态码
 
@@ -87,7 +217,7 @@ def api_submit():
 
 
 # 接收图片
-@__app.route('/receive-image', methods=['POST'])
+@__app.route('/receive-image', methods=['GET'])
 def receive_image():
     try:
         # 获取POST请求中的JSON数据，其中包含Base64编码的图片数据
@@ -105,7 +235,7 @@ def receive_image():
             # 将Base64编码转换为图片文件
             image_data = base64.b64decode(image_base64)
             print(image_data)
-            image_url = "./gui/static/source/img/picture.jpg"  # 设置图片保存路径
+            image_url = "./gui/templates/picture.jpg"  # 设置图片保存路径
             with open(image_url, 'wb') as f:
                 f.write(image_data)
             # 假设 image_base64 是包含 Base64 编码的字符串
@@ -141,10 +271,10 @@ def get_location():
 
 
 # 加载用药信息
-@__app.route('/api/get-medcine', methods=['GET'])
+@__app.route('/get-medcine', methods=['GET'])
 def get_medcine():
     med_data = {
-        'med_name': "头孢",
+        'med_name': "头孢克肟颗粒",
         'med_spec': "50mg*6袋",
         'med_usage': "口服",
         'med_freq': "2次/天",
@@ -160,17 +290,6 @@ def get_robot_data():
     print(data)
     response_data = {'message': 'Data received successfully'}
     return jsonify(response_data)
-
-
-# 保存用户信息
-@__app.route('/api/post-user-inform', methods=['post'])
-def api_post_user_inform():
-    data = request.values.get('data')
-    print(data)
-    config_data = json.loads(data)
-
-    return config_data
-
 
 
 
@@ -239,7 +358,7 @@ def save_medicine_info():
 
             # 插入数据到数据库
             cursor.execute('''INSERT INTO med_inform (med_name, med_spec, med_usage, med_freq, med_dosage, time)
-                              VALUES (?, ?, ?, ?, ?, ?)''', (med_name, med_spec, med_usage, med_freq, med_dosage, med_time))
+                              VALUES (?, ?, ?, ?, ?, ?)''', (med_name, med_spec, med_usage, med_freq, med_dosage, time))
             conn.commit()
             cursor.close()
             conn.close()
@@ -253,24 +372,38 @@ def save_medicine_info():
 
     return 'User information saved successfully.'
 
-# 保存用药信息
-@__app.route('/api/post-med-inform', methods=['post'])
-def api_post_med_inform():
-    data = request.values.get('data')
-    print(data)
-    config_data = json.loads(data)
 
-    return config_data
+@__app.route('/save-location-info', methods=['POST'])
+def save_location_info():
+    try:
+        if request.method == 'POST':
+            location_info = request.json  # 假设前端将数据以JSON格式发送
+            print(location_info)
+            location = location_info.get('location')
+            coordinate = location_info.get('coordinate')
 
+            # 设置SQLite数据库连接
+            conn = sqlite3.connect('fay.db')
+            print(conn)
+            cursor = conn.cursor()
+            print(cursor)
 
-# 保存状态信息
-@__app.route('/api/post-state-inform', methods=['post'])
-def api_post_state_inform():
-    data = request.values.get('data')
-    print(data)
-    config_data = json.loads(data)
+            # 插入数据到数据库
+            cursor.execute('''INSERT INTO location_inform (location, coordinate)
+                              VALUES (?, ?)''', (location, coordinate))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return 'User information saved successfully.'
+    except sqlite3.Error as e:
+        print(e)
+        return 'An error occurred while saving user information.'
+    except Exception as e:
+        print(e)
+        return 'An error occurred while saving user information.'
 
-    return config_data
+    return 'User information saved successfully.'
+
 
 @__app.route('/api/control-eyes', methods=['post'])
 def control_eyes():
@@ -353,96 +486,59 @@ def api_post_location():
 def home_get():
     return __get_template()
 
-
 @__app.route('/behavior/detection', methods=['post'])
 def behavior_detection():
+    # conn = sqlite3.connect('fay.db')
+    # conn.execute('PRAGMA busy_timeout = 5000')
     try:
         # 图像识别
         request_data = request.json
         image = request_data.get("image")
-        # 图像识别
         result = image_behavior.behavior_detection(image)
-        # print(result)
-        result_data = json.loads(result)
-        result_describe = result_data['result']
-        print(result_describe)
-        # 获取最新的久坐数据
-        conn = sqlite3.connect("fay.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, timespan, date_time FROM sedentary_info ORDER BY id DESC LIMIT 1")
-        row = cursor.fetchone()
-        id, timespan, date_time = row
 
-        if "坐" in result_describe:
+        #结果写死 站着、坐着的概率
+
+
+        # 根据图像识别结果判断是否有坐
+        result = "有个老人正在坐着"
+
+        if "坐" in result:
+            # 获取最新的久坐数据
+            contentdb = Content_Db()
+            row = contentdb.get_sit()
             # 更新数据库
             if row:
+                id, timespan, date_time = row
                 new_timespan = timespan + 10
                 new_date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                cursor.execute("UPDATE sedentary_info SET timespan=?,date_time=? WHERE id=?",
-                               (new_timespan, new_date_time, id))
-                conn.commit()
-                # conn.close()
-                if new_timespan >= 120:  # 当前久坐时长到达2小时
-                    # 插入一条新数据
-                    cursor.execute("insert into sedentary_info (id,timespan,date_time) values(?,?,?)",
-                                   (id + 1, 0, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-                    conn.commit()
-
-                    # 调用语音播报接口
-                    url = "http://127.0.0.1:5000/robot/send_msg"
-                    payload = json.dumps({
-                        "kafka_ip": "8.130.108.7:9092",
-                        "topic_name": "reminder",
-                        "message": {
-                            "type": "voice",
-                            "content": "您已久坐两小时，快起身跟我一起运动下吧！"
-                        }
-                    })
-                    headers = {
-                        'Content-Type': 'application/json'
-                    }
-                    response = requests.request("POST", url, headers=headers, data=payload)
-
-                    # 调用视频播放接口
+                contentdb.add_sit(new_timespan,new_date_time,id+1)
+                # if new_timespan >= 120:
+                #     # 当前久坐时长到达2小时
+                #     # 调用语音播报接口
+                #     # 调用视频播放接口
+                #     print("当前已经久坐2小时，跟我一起运动吧")
             else:
                 print("表中没有数据")
 
             # 更新前端数据
-        elif '倒' in result_describe or '地' in result_describe:
-            # 机器人播报
-            url = "http://127.0.0.1:5000/robot/send_msg"
-            payload = json.dumps({
-                "kafka_ip": "8.130.108.7:9092",
-                "topic_name": "reminder",
-                "message": {
-                    "type": "voice",
-                    "content": "检测到老人跌倒"
-                }
-            })
-            headers = {
-                'Content-Type': 'application/json'
-            }
-            response = requests.request("POST", url, headers=headers, data=payload)
-            print(response.text)
+
+            # 判断是否达到两小时
         else:
-            cursor.execute("UPDATE sedentary_info SET timespan=? WHERE id=?",
-                           (0, id))
-            conn.commit()
-            # conn.close()
-            print("字符串中不包含坐着，久坐时间清0")
+            print("字符串中不包含坐着")
 
         # <Response [200]>
-        return jsonify({'result': result_describe})
+        return jsonify({'result': result})
 
     except sqlite3.Error as e:
         print(e)
         return jsonify({'error': '请求处理出错：' + str(e)}), 500
     except Exception as e:
         return jsonify({'error': '请求处理出错：' + str(e)}), 500
-    finally:
-        # 关闭连接
-        if conn:
-            conn.close()
+    # finally:
+    #     # 关闭连接
+    #     if conn:
+    #         print("数据库关闭")
+    #         conn.close()
 
 def run():
     server = pywsgi.WSGIServer(('0.0.0.0',5000), __app)

@@ -109,6 +109,10 @@
                                             <el-input v-model="user_inform.med_inform.name" placeholder="请输入内容"></el-input>
                                         </li>
                                           <li style="margin-bottom: 10px;">
+                                            <p>药盒号：</p>
+                                            <el-input v-model="user_inform.med_inform.num" placeholder="请输入内容"></el-input>
+                                        </li>
+                                          <li style="margin-bottom: 10px;">
                                             <p>规格：</p>
                                             <el-input v-model="user_inform.med_inform.spec" placeholder="请输入内容"></el-input>
                                         </li>  <li style="margin-bottom: 10px;">
@@ -127,7 +131,7 @@
                                             <el-input v-model="user_inform.med_inform.time" placeholder="请输入内容"></el-input>
                                         </li>
                                         <el-button type="button" style="width:100px ;height: 40px" @click=postMedInform()>保存</el-button>
-                                        <el-button type="button" style="width:100px ;height: 40px" @click="getMedcine()">刷新</el-button>
+                                        <el-button type="button" style="width:100px ;height: 40px" @click="getMedicine()">刷新</el-button>
 <!--{#                                            <p>Q&A文件：</p>#}-->
 <!--{#                                            <el-input v-model="interact_QnA" placeholder="请输入内容"></el-input>#}-->
 <!--{#                                        </li>#}-->
@@ -168,23 +172,31 @@
                         <p>&nbsp;用户状态</p>
                         <div class="source">
                             <ul>
-                                <div class="character_left">
+                                <div class="left-side">
                                     <li>
                                      <p>位置：</p>
-                                     <el-input v-model="user_inform.location" placeholder="请输入内容" style="width: 375px;"></el-input>
+                                     <el-input v-model="user_inform.location" placeholder="请输入内容" style="width: 300px;"></el-input>
                                     </li>
                                     <li>
                                      <p>坐标：</p>
-                                     <el-input v-model="user_inform.coordinate" placeholder="请输入内容" style="width: 375px;"></el-input>
+                                     <el-input v-model="user_inform.coordinate" placeholder="请输入内容" style="width: 300px;"></el-input>
                                     </li>
+                                    <li>
+                                     <p>久坐时间：</p>
+                                     <el-input v-model="user_inform.sit_time" placeholder="请输入内容" style="width: 300px;"></el-input>
+                                    </li>
+
+                                </div>
+                                        <el-button type="button" style="width:100px;height: 40px" @click=postStateInform()>保存</el-button>
+                                        <el-button type="button" style="width:100px;height: 40px" @click=getLocation()>刷新</el-button>
+                                <div class="right-side">
+
                                     <li>
                                      <p>久坐时间：</p>
                                      <el-input v-model="user_inform.sit_time" placeholder="请输入内容" style="width: 375px;"></el-input>
                                     </li>
 
                                 </div>
-                                        <el-button type="button" style="width:100px;height: 40px" @click=postStateInform()>保存</el-button>
-                                        <el-button type="button" style="width:100px;height: 40px" @click=getLocation()>刷新</el-button>
 
 
 <!--                                <li class="url">-->
