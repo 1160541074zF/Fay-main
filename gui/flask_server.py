@@ -54,6 +54,18 @@ def receive_message():
     response = {'message': 'send successfully'}
     return jsonify(response), 200  # 返回响应和状态码
 
+@__app.route("/robot/control", methods=["POST"])
+def send_control():
+    payload = request.json
+    kafka_ip = payload["kafka_ip"]
+    topic_name = payload["topic_name"]
+    command = payload["command"]
+
+    # Process to send message
+    client.send_sport_robot(kafka_ip, topic_name, command)
+    response = {'message': 'send successfully'}
+    return jsonify(response), 200  # 返回响应和状态码
+
 
 
 @__app.route('/api/submit', methods=['post'])

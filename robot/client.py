@@ -10,3 +10,14 @@ def send_message_to_kafka(kafka_ip, topic_name, message):
     producer.flush()
     # 关闭Kafka生产者
     producer.close()
+
+
+def send_sport_robot(kafka_ip, topic_name, command):
+    # 创建Kafka生产者
+    producer = KafkaProducer(bootstrap_servers=kafka_ip, value_serializer=lambda x: json.dumps(x).encode('utf-8'))
+    # 将消息发送到指定主题
+    producer.send(topic_name, command)
+    # 等待消息发送成功
+    producer.flush()
+    # 关闭Kafka生产者
+    producer.close()

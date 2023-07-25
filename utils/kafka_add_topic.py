@@ -6,7 +6,7 @@ admin_client = KafkaAdminClient(bootstrap_servers='8.130.108.7:9092')
 voice_tts 语音播报话题
 '''
 
-topic_name = "reminder"
+topic_name = "control"
 num_partitions = 1
 replication_factor = 1
 
