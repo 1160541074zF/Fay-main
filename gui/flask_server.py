@@ -1,6 +1,7 @@
 import base64
 # import imp
 import json
+import sqlite3
 import time
 
 import pyaudio
@@ -18,6 +19,7 @@ from core import fay_core
 from core.content_db import Content_Db
 from robot import client
 from ai_module import yolov8
+from ai_module import image_behavior
 
 __app = Flask(__name__)
 CORS(__app, supports_credentials=True)
@@ -72,36 +74,6 @@ def api_submit():
     return '{"result":"successful"}'
 
 
-# 在这里配置 Kafka 的连接信息
-kafka_ip = "192.168.3.15:9092"
-kafka_topic = "reminder"
-
-@__app.route('/robot/send_msg', methods=['POST'])
-def send_message_to_kafka():
-    try:
-        data = request.get_json()
-        kafka_ip = data.get("kafka_ip")
-        kafka_topic = data.get("topic_name")
-        message_type = data.get("message", {}).get("type", "")
-        message_content = data.get("message", {}).get("content", "")
-
-        # 创建 Kafka 生产者对象
-        producer = KafkaProducer(bootstrap_servers=kafka_ip)
-
-        # 将消息发送到 Kafka
-        producer.send(kafka_topic, key=message_type.encode(), value=message_content.encode())
-
-        # 关闭 Kafka 生产者
-        producer.close()
-
-        response = {"status": "success", "message": "Message sent to Kafka successfully."}
-        return jsonify(response), 200
-
-    except Exception as e:
-        response = {"status": "error", "message": str(e)}
-        return jsonify(response), 500
-
-
 # 接收图片
 @__app.route('/receive-image', methods=['GET'])
 def receive_image():
@@ -133,15 +105,16 @@ def receive_image():
                 # 返回图片文件的URL给前端
                 # return jsonify({"status": "success", "image_url": "/static/picture.jpg"})
             # image_url = f'http://127.0.0.1:5000/{image_path}'  # 设置图片文件在服务器上的访问URL
-            return jsonify({"status": "success", "image_data": "图片接收成功"})
+            # return jsonify({"status": "success", "image_data": "图片接收成功"})
 
-            # return jsonify({"status": "success", "image_url": image_url})
+            return jsonify({"status": "success", "image_url": image_url})
 
         else:
             return jsonify({"status": "error", "message": "缺少图片数据"})
 
     except Exception as e:
         return jsonify({"status": "error", "message": "图片接收失败", "error": str(e)})
+
 
 # 加载位置信息
 @__app.route('/api/get-location', methods=['GET'])
@@ -154,6 +127,7 @@ def get_location():
     }
     return jsonify({"text": location_data})
 
+
 # 加载用药信息
 @__app.route('/api/get-medcine', methods=['GET'])
 def get_medcine():
@@ -165,8 +139,6 @@ def get_medcine():
         'med_dosage': "50mg",
     }
     return jsonify({"text": med_data})
-
-
 
 
 # 接收位置
@@ -188,6 +160,87 @@ def api_post_user_inform():
     return config_data
 
 
+
+
+# 创建数据库表（如果还不存在）
+# cursor.execute('''CREATE TABLE IF NOT EXISTS user_info (
+#                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+#                   user_name TEXT NOT NULL,
+#                   user_gender TEXT NOT NULL,
+#                   user_age INTEGER NOT NULL,
+#                   user_type TEXT NOT NULL
+#                   )''')
+# conn.commit()
+
+@__app.route('/save-user-info', methods=['POST'])
+def save_user_info():
+    try:
+        if request.method == 'POST':
+            user_info = request.json  # 假设前端将数据以JSON格式发送
+            print(user_info)
+            user_name = user_info.get('user_name')
+            user_gender = user_info.get('user_gender')
+            user_age = user_info.get('user_age')
+            user_type = user_info.get('user_type')
+
+            # 设置SQLite数据库连接
+            conn = sqlite3.connect('fay.db')
+            print(conn)
+            cursor = conn.cursor()
+            print(cursor)
+
+            # 插入数据到数据库
+            cursor.execute('''INSERT INTO user_inform (user_name, user_gender, user_age, user_type)
+                              VALUES (?, ?, ?, ?)''', (user_name, user_gender, user_age, user_type))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return 'User information saved successfully.'
+    except sqlite3.Error as e:
+        print(e)
+        return 'An error occurred while saving user information.'
+    except Exception as e:
+        print(e)
+        return 'An error occurred while saving user information.'
+
+    return 'User information saved successfully.'
+
+
+@__app.route('/save-medicine-info', methods=['POST'])
+def save_medicine_info():
+    try:
+        if request.method == 'POST':
+            med_info = request.json  # 假设前端将数据以JSON格式发送
+            print(med_info)
+            med_name = med_info.get('med_name')
+            med_spec = med_info.get('med_spec')
+            med_usage = med_info.get('med_usage')
+            med_freq = med_info.get('med_freq')
+            med_dosage = med_info.get('med_dosage')
+            med_time = med_info.get('med_time')
+
+            # 设置SQLite数据库连接
+            conn = sqlite3.connect('fay.db')
+            print(conn)
+            cursor = conn.cursor()
+            print(cursor)
+
+            # 插入数据到数据库
+            cursor.execute('''INSERT INTO med_inform (med_name, med_spec, med_usage, med_freq, med_dosage, time)
+                              VALUES (?, ?, ?, ?, ?, ?)''', (med_name, med_spec, med_usage, med_freq, med_dosage, med_time))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return 'User information saved successfully.'
+    except sqlite3.Error as e:
+        print(e)
+        return 'An error occurred while saving user information.'
+    except Exception as e:
+        print(e)
+        return 'An error occurred while saving user information.'
+
+    return 'User information saved successfully.'
+
 # 保存用药信息
 @__app.route('/api/post-med-inform', methods=['post'])
 def api_post_med_inform():
@@ -207,16 +260,16 @@ def api_post_state_inform():
 
     return config_data
 
-# @__app.route('/api/control-eyes', methods=['post'])
-# def control_eyes():
-#     eyes = yolov8.new_instance()
-#     if(not eyes.get_status()):
-#        eyes.start()
-#        util.log(1, "YOLO v8正在启动...")
-#     else:
-#        eyes.stop()
-#        util.log(1, "YOLO v8正在关闭...")
-#     return '{"result":"successful"}'
+@__app.route('/api/control-eyes', methods=['post'])
+def control_eyes():
+    eyes = yolov8.new_instance()
+    if(not eyes.get_status()):
+       eyes.start()
+       util.log(1, "YOLO v8正在启动...")
+    else:
+       eyes.stop()
+       util.log(1, "YOLO v8正在关闭...")
+    return '{"result":"successful"}'
 
 
 @__app.route('/api/get-data', methods=['post'])
@@ -288,6 +341,59 @@ def api_post_location():
 def home_get():
     return __get_template()
 
+@__app.route('/behavior/detection', methods=['post'])
+def behavior_detection():
+    # conn = sqlite3.connect('fay.db')
+    # conn.execute('PRAGMA busy_timeout = 5000')
+    try:
+        # 图像识别
+        request_data = request.json
+        image = request_data.get("image")
+        result = image_behavior.behavior_detection(image)
+
+        #结果写死 站着、坐着的概率
+
+
+        # 根据图像识别结果判断是否有坐
+        result = "有个老人正在坐着"
+
+        if "坐" in result:
+            # 获取最新的久坐数据
+            contentdb = Content_Db()
+            row = contentdb.get_sit()
+            # 更新数据库
+            if row:
+                id, timespan, date_time = row
+                new_timespan = timespan + 10
+                new_date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                contentdb.add_sit(new_timespan,new_date_time,id+1)
+                # if new_timespan >= 120:
+                #     # 当前久坐时长到达2小时
+                #     # 调用语音播报接口
+                #     # 调用视频播放接口
+                #     print("当前已经久坐2小时，跟我一起运动吧")
+            else:
+                print("表中没有数据")
+
+            # 更新前端数据
+
+            # 判断是否达到两小时
+        else:
+            print("字符串中不包含坐着")
+
+        # <Response [200]>
+        return jsonify({'result': result})
+
+    except sqlite3.Error as e:
+        print(e)
+        return jsonify({'error': '请求处理出错：' + str(e)}), 500
+    except Exception as e:
+        return jsonify({'error': '请求处理出错：' + str(e)}), 500
+    # finally:
+    #     # 关闭连接
+    #     if conn:
+    #         print("数据库关闭")
+    #         conn.close()
 
 def run():
     server = pywsgi.WSGIServer(('0.0.0.0',5000), __app)

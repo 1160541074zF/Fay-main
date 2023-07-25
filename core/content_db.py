@@ -60,7 +60,27 @@ class Content_Db:
         conn.close()
         return list
 
+    # 更新最新的久坐数据
+    @synchronized
+    def add_sit(self, timespan, date_time, id):
+        conn = sqlite3.connect("fay.db")
+        cursor = conn.cursor()
+        # cursor.execute("UPDATE sedentary_info SET timespan=?,date_time=? WHERE id=?",
+        #                (timespan, date_time, id))
+        cursor.execute("insert into sedentary_info (id,timespan,date_time) values(?,?,?)",
+                       (id, timespan, date_time))
+        conn.commit()
+        conn.close()
 
+    # 获取最新的久坐数据
+    @synchronized
+    def get_sit(self):
+        conn = sqlite3.connect("fay.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, timespan, date_time FROM sedentary_info ORDER BY id DESC LIMIT 1")
+        row = cursor.fetchone()
+        conn.close()
+        return row
 
 
 

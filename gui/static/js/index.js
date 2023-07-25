@@ -510,30 +510,36 @@ new Vue({
     // },
         // 保存用户信息
       postUserInform() {
-         const url = "http://127.0.0.1:5000/api/post-user-inform";
-         let data = {
-            kafka_ip: "8.130.108.7:9092",
-            topic_name: "reminder",
-            message: {
-                type: "voice",
-                content: {
-                    "user_name": this.user_inform.name,
-                    "user_gender": this.user_inform.gender,
-                    "user_age": this.user_inform.age,
-                    "user_type": this.user_inform.type,
-                }
-            },
-        };
+         const url = "http://127.0.0.1:5000/save-user-info";
+        //  let data = {
+        //     kafka_ip: "8.130.108.7:9092",
+        //     topic_name: "reminder",
+        //     message: {
+        //         type: "voice",
+        //         content: {
+        //             "user_name": this.user_inform.name,
+        //             "user_gender": this.user_inform.gender,
+        //             "user_age": this.user_inform.age,
+        //             "user_type": this.user_inform.type,
+        //         }
+        //     },
+        // };
+        let data = {
+            "user_name": this.user_inform.name,
+            "user_gender": this.user_inform.gender,
+            "user_age": this.user_inform.age,
+            "user_type": this.user_inform.type,
+        }
         const headers = {
             'Content-Type': 'application/json'
         };
 
         let xhr = new XMLHttpRequest()
              xhr.open("post", url)
-             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-             xhr.send('data=' + JSON.stringify(data))
+             xhr.setRequestHeader("Content-type", "application/json")
+             xhr.send(JSON.stringify(data))
              let executed = false
-             xhr.onreadystatechange = async function () {
+             xhr.onreadystatechange = function () {
                 if (!executed && xhr.status === 200) {
                     try {
                        let data = JSON.parse(xhr.responseText);
@@ -544,7 +550,7 @@ new Vue({
                 }
             }
 
-            console.log(data.message.content)
+            console.log(data)
 
         // fetch(url, {
         //     method: 'POST',
@@ -558,51 +564,59 @@ new Vue({
 
            // 保存用药信息
       postMedInform() {
-         const url = "http://127.0.0.1:5000/api/post-med-inform";
-         let data = {
-            kafka_ip: "8.130.108.7:9092",
-            topic_name: "reminder",
-            message: {
-                type: "voice",
-                content: {
+         const url = "http://127.0.0.1:5000/save-medicine-info";
+        //  let data = {
+        //     kafka_ip: "8.130.108.7:9092",
+        //     topic_name: "reminder",
+        //     message: {
+        //         type: "voice",
+        //         content: {
+        //             "med_name": this.user_inform.med_inform.name,
+        //             "med_spec": this.user_inform.med_inform.spec,
+        //             "med_usage": this.user_inform.med_inform.usage,
+        //             "med_freq": this.user_inform.med_inform.freq,
+        //             "med_dosage": this.user_inform.med_inform.dosage,
+        //             "med_time": this.user_inform.med_inform.time,
+        //         }
+        //     },
+        // };
+        let data = {
                     "med_name": this.user_inform.med_inform.name,
                     "med_spec": this.user_inform.med_inform.spec,
                     "med_usage": this.user_inform.med_inform.usage,
                     "med_freq": this.user_inform.med_inform.freq,
                     "med_dosage": this.user_inform.med_inform.dosage,
                     "med_time": this.user_inform.med_inform.time,
-                }
-            },
-        };
+                };
         const headers = {
             'Content-Type': 'application/json'
         };
 
-        let xhr = new XMLHttpRequest()
-             xhr.open("post", url)
-             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-             xhr.send('data=' + JSON.stringify(data))
-             let executed = false
-             xhr.onreadystatechange = async function () {
-                if (!executed && xhr.status === 200) {
-                    try {
-                       let data = JSON.parse(xhr.responseText);
-                       console.log("data: " + data['result']);
-                        executed = true;
-                    } catch (e) {
-                    }
-                }
-            }
-            console.log(data.message.content)
+        // let xhr = new XMLHttpRequest()
+        //      xhr.open("post", url)
+        //      xhr.setRequestHeader("Content-type", "application/json")
+        //      xhr.send(JSON.stringify(data))
+        //      let executed = false
+        //      xhr.onreadystatechange = function () {
+        //         if (!executed && xhr.status === 200) {
+        //             try {
+        //                let data = JSON.parse(xhr.responseText);
+        //                console.log("data: " + data['result']);
+        //                 executed = true;
+        //             } catch (e) {
+        //             }
+        //         }
+        //     }
+        //     console.log(data)
 
-        // fetch(url, {
-        //     method: 'POST',
-        //     headers: headers,
-        //     body: JSON.stringify(data)
-        // })
-        // .then(response => response.text())
-        // .then(data => console.log(data))
-        // .catch(error => console.error('Error:', error));
+        fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(data)
+        })
+        .then(response => response.text())
+        .then(data => console.log(data))
+        .catch(error => console.error('Error:', error));
       },
               // 保存状态信息
       postStateInform() {
@@ -849,7 +863,8 @@ new Vue({
                   // _this.getMsgList()
                 //    document.querySelector('#textarea').value = '';
                 //    document.querySelector('#textarea').focus();
-
+                    const responseData = JSON.parse(xhr.responseText);
+                    console.log("Response data:", responseData);
                 }
             }
 
