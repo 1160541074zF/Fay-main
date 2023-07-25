@@ -87,7 +87,7 @@ def api_submit():
 
 
 # 接收图片
-@__app.route('/receive-image', methods=['GET'])
+@__app.route('/receive-image', methods=['POST'])
 def receive_image():
     try:
         # 获取POST请求中的JSON数据，其中包含Base64编码的图片数据
@@ -105,7 +105,7 @@ def receive_image():
             # 将Base64编码转换为图片文件
             image_data = base64.b64decode(image_base64)
             print(image_data)
-            image_url = "C:/学习/项目/Fay-main/gui/templates/picture.jpg"  # 设置图片保存路径
+            image_url = "./templates/picture.jpg"  # 设置图片保存路径
             with open(image_url, 'wb') as f:
                 f.write(image_data)
             # 假设 image_base64 是包含 Base64 编码的字符串
