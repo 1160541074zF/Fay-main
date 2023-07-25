@@ -7,7 +7,7 @@ def image_to_base64(image_path):
         return base64.b64encode(img_file.read()).decode('utf-8')
 
 # 指定要发送的图片
-image_path = "D:\picture.jpg" #换成你自己的图片
+image_path = "G:\老人坐着.jpg" #换成你自己的图片
 image_base64 = image_to_base64(image_path)
 
 # 请求的 URL
