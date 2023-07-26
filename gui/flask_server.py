@@ -3,6 +3,7 @@ import base64
 import json
 import sqlite3
 import time
+import requests
 
 import pyaudio
 from flask import Flask, render_template, request, jsonify
@@ -20,6 +21,7 @@ from core.content_db import Content_Db
 from robot import client
 from ai_module import yolov8
 from ai_module import image_behavior
+from datetime import datetime, timedelta
 
 __app = Flask(__name__)
 CORS(__app, supports_credentials=True)
@@ -193,6 +195,18 @@ def receive_message():
 
     # Process to send message
     client.send_message_to_kafka(kafka_ip, topic_name, message)
+    response = {'message': 'send successfully'}
+    return jsonify(response), 200  # 返回响应和状态码
+
+@__app.route("/robot/control", methods=["POST"])
+def robot_control():
+    payload = request.json
+    kafka_ip = payload["kafka_ip"]
+    topic_name = payload["topic_name"]
+    message = payload["command"]
+
+    # Process to send message
+    client.send_sport_robot(kafka_ip, topic_name, message)
     response = {'message': 'send successfully'}
     return jsonify(response), 200  # 返回响应和状态码
 
@@ -436,7 +450,6 @@ def save_time_info():
 
     return 'User information saved successfully.'
 
-
 @__app.route('/api/control-eyes', methods=['post'])
 def control_eyes():
     eyes = yolov8.new_instance()
@@ -520,57 +533,102 @@ def home_get():
 
 @__app.route('/behavior/detection', methods=['post'])
 def behavior_detection():
-    # conn = sqlite3.connect('fay.db')
-    # conn.execute('PRAGMA busy_timeout = 5000')
     try:
         # 图像识别
         request_data = request.json
         image = request_data.get("image")
+        # 图像识别
         result = image_behavior.behavior_detection(image)
+        # print(result)
+        result_data = json.loads(result)
+        result_describe = result_data['result']
+        print(result_describe)
+        # 获取最新的久坐数据
+        conn = sqlite3.connect("fay.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, timespan, date_time FROM sedentary_info ORDER BY id DESC LIMIT 1")
+        row = cursor.fetchone()
+        id, timespan, date_time = row
 
-        #结果写死 站着、坐着的概率
-
-
-        # 根据图像识别结果判断是否有坐
-        result = "有个老人正在坐着"
-
-        if "坐" in result:
-            # 获取最新的久坐数据
-            contentdb = Content_Db()
-            row = contentdb.get_sit()
+        if "坐" in result_describe:
             # 更新数据库
             if row:
-                id, timespan, date_time = row
                 new_timespan = timespan + 10
                 new_date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                contentdb.add_sit(new_timespan,new_date_time,id+1)
-                # if new_timespan >= 120:
-                #     # 当前久坐时长到达2小时
-                #     # 调用语音播报接口
-                #     # 调用视频播放接口
-                #     print("当前已经久坐2小时，跟我一起运动吧")
+                cursor.execute("UPDATE sedentary_info SET timespan=?,date_time=? WHERE id=?",
+                               (new_timespan, new_date_time, id))
+                conn.commit()
+                # conn.close()
+                if new_timespan >= 120:  # 当前久坐时长到达2小时
+                    # 插入一条新数据
+                    cursor.execute("insert into sedentary_info (id,timespan,date_time) values(?,?,?)",
+                                   (id + 1, 0, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                    conn.commit()
+
+                    # 调用语音播报接口
+                    url = "http://127.0.0.1:5000/robot/send_msg"
+                    payload = json.dumps({
+                        "kafka_ip": "8.130.108.7:9092",
+                        "topic_name": "reminder",
+                        "message": {
+                            "type": "voice",
+                            "content": "您已久坐两小时，快起身跟我一起运动下吧！"
+                        }
+                    })
+                    headers = {
+                        'Content-Type': 'application/json'
+                    }
+                    response = requests.request("POST", url, headers=headers, data=payload)
+                    print(response.text)
+
+                    # 调用视频播放接口
+                    url = "http://192.168.3.37:6000/robot/control"
+                    payload = json.dumps({
+                        "kafka_ip": "8.130.108.7:9092",
+                        "topic_name": "control",
+                        "command": "play_video"
+                    })
+                    response = requests.request("POST", url, headers=headers, data=payload)
+                    print(response.text)
             else:
                 print("表中没有数据")
 
             # 更新前端数据
-
-            # 判断是否达到两小时
+        elif '倒' in result_describe or '地' in result_describe:
+            # 机器人播报
+            url = "http://127.0.0.1:5000/robot/send_msg"
+            payload = json.dumps({
+                "kafka_ip": "8.130.108.7:9092",
+                "topic_name": "reminder",
+                "message": {
+                    "type": "voice",
+                    "content": "检测到老人跌倒"
+                }
+            })
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            response = requests.request("POST", url, headers=headers, data=payload)
+            print(response.text)
         else:
-            print("字符串中不包含坐着")
+            cursor.execute("UPDATE sedentary_info SET timespan=? WHERE id=?",
+                           (0, id))
+            conn.commit()
+            # conn.close()
+            print("字符串中不包含坐着，久坐时间清0")
 
         # <Response [200]>
-        return jsonify({'result': result})
+        return jsonify({'result': result_describe})
 
     except sqlite3.Error as e:
         print(e)
         return jsonify({'error': '请求处理出错：' + str(e)}), 500
     except Exception as e:
         return jsonify({'error': '请求处理出错：' + str(e)}), 500
-    # finally:
-    #     # 关闭连接
-    #     if conn:
-    #         print("数据库关闭")
-    #         conn.close()
+    finally:
+        # 关闭连接
+        if conn:
+            conn.close()
 
 def run():
     server = pywsgi.WSGIServer(('0.0.0.0',5000), __app)
