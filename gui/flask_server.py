@@ -235,7 +235,8 @@ def receive_image():
             # 将Base64编码转换为图片文件
             image_data = base64.b64decode(image_base64)
             print(image_data)
-            image_url = "./gui/templates/picture.jpg"  # 设置图片保存路径
+            image_url = "./gui/static/source/img/picture.jpg"  # 设置图片保存路径
+
             with open(image_url, 'wb') as f:
                 f.write(image_data)
             # 假设 image_base64 是包含 Base64 编码的字符串
@@ -357,7 +358,7 @@ def save_medicine_info():
             print(cursor)
 
             # 插入数据到数据库
-            cursor.execute('''INSERT INTO med_inform (med_name, med_spec, med_usage, med_freq, med_dosage, time)
+            cursor.execute('''INSERT INTO med_inform (med_name, med_spec, med_usage, med_freq, med_dosage, med_time)
                               VALUES (?, ?, ?, ?, ?, ?)''', (med_name, med_spec, med_usage, med_freq, med_dosage, time))
             conn.commit()
             cursor.close()
@@ -365,10 +366,10 @@ def save_medicine_info():
             return 'User information saved successfully.'
     except sqlite3.Error as e:
         print(e)
-        return 'An error occurred while saving user information.'
+        return 'An error occurred while saving medicine information.'
     except Exception as e:
         print(e)
-        return 'An error occurred while saving user information.'
+        return 'An error occurred while saving medicine information.'
 
     return 'User information saved successfully.'
 
@@ -397,10 +398,41 @@ def save_location_info():
             return 'User information saved successfully.'
     except sqlite3.Error as e:
         print(e)
-        return 'An error occurred while saving user information.'
+        return 'An error occurred while saving location information.'
     except Exception as e:
         print(e)
-        return 'An error occurred while saving user information.'
+        return 'An error occurred while saving location information.'
+
+    return 'User information saved successfully.'
+
+
+@__app.route('/save-sit-time', methods=['POST'])
+def save_time_info():
+    try:
+        if request.method == 'POST':
+            sit_time = request.json  # 假设前端将数据以JSON格式发送
+            print(sit_time)
+            sit_time = sit_time.get('time')
+
+            # 设置SQLite数据库连接
+            conn = sqlite3.connect('fay.db')
+            print(conn)
+            cursor = conn.cursor()
+            print(cursor)
+
+            # 插入数据到数据库
+            cursor.execute('''INSERT INTO sedentary_info (timespan)
+                              VALUES (?)''', (sit_time))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return 'User information saved successfully.'
+    except sqlite3.Error as e:
+        print(e)
+        return 'An error occurred while saving sittime information.'
+    except Exception as e:
+        print(e)
+        return 'An error occurred while saving sittime information.'
 
     return 'User information saved successfully.'
 

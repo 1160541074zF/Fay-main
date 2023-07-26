@@ -402,35 +402,44 @@ new Vue({
 
 
         // 加载图片
+        // getPicture() {
+        //     let url = "http://127.0.0.1:5000/receive-image";
+        //     // 创建一个新的XMLHttpRequest对象
+        //     const xhr = new XMLHttpRequest();
+        //     xhr.open("post", url)
+        //     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+        //     xhr.send()
+        //     // 监听请求的状态变化
+        //     xhr.onreadystatechange = function () {
+        //         if (xhr.readyState === 4) {
+        //             if (xhr.status === 200) {
+        //                 // this.picture_url = url;
+        //                 // console.log(this.picture_url);
+        //                 // 当请求成功时，获取返回的图片数据
+        //                 let imageData = xhr.response;
+        //
+        //                 // 将图片数据转换为DataURL
+        //                 let imageBase64 = 'data:image/jpeg;base64,' + btoa(String.fromCharCode(...new Uint8Array(imageData)));
+        //
+        //                 // 将DataURL赋值给<img>标签的src属性，以显示图片
+        //                 document.getElementById('image').src = imageBase64;
+        //             } else {
+        //                 // 当请求失败时，处理错误情况
+        //                 console.error('无法获取图片');
+        //             }
+        //         }
+        //     }
+        // },
         getPicture() {
-            let url = "http://127.0.0.1:5000/receive-image";
-            // 创建一个新的XMLHttpRequest对象
-            const xhr = new XMLHttpRequest();
-            xhr.open("post", url)
-            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-            xhr.send()
-            // 监听请求的状态变化
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        // this.picture_url = url;
-                        // console.log(this.picture_url);
-                        // 当请求成功时，获取返回的图片数据
-                        let imageData = xhr.response;
+              let imageElement = document.getElementById('myImage');
+              let imageUrl = imageElement.src;
 
-                        // 将图片数据转换为DataURL
-                        let imageBase64 = 'data:image/jpeg;base64,' + btoa(String.fromCharCode(...new Uint8Array(imageData)));
+              // 添加随机数或时间戳作为查询参数，以强制浏览器重新加载图片
+              imageUrl += '?' + new Date().getTime();
 
-                        // 将DataURL赋值给<img>标签的src属性，以显示图片
-                        document.getElementById('image').src = imageBase64;
-                    } else {
-                        // 当请求失败时，处理错误情况
-                        console.error('无法获取图片');
-                    }
-                }
-            }
+              // 更新图片的src属性，触发浏览器重新加载图片
+              imageElement.src = imageUrl;
         },
-
 
         // refreshImage() {
         //     // 获取图片的URL，这里可以通过 Ajax 或其他方式从后端获取新图片的URL
@@ -445,7 +454,7 @@ new Vue({
               // 加载用药信息
         async getMedicine(){
              // 使用AJAX发送GET请求获取用药信息
-                fetch('/get-medicine')
+                fetch('/get-medcine')
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
@@ -636,20 +645,9 @@ new Vue({
         .catch(error => console.error('Error:', error));
       },
               // 保存位置信息
-      postStateInform() {
+      postLocationInform() {
          const url = "http://127.0.0.1:5000/save-location-info";
-         // let data = {
-         //    kafka_ip: "8.130.108.7:9092",
-         //    topic_name: "reminder",
-         //    message: {
-         //        type: "voice",
-         //        content: {
-         //            "location": this.user_inform.location,
-         //            "coordinate": this.user_inform.coordinate,
-         //            "sit_time": this.user_inform.sit_time,
-         //        }
-         //    },
-        // };
+
           let data = {
               "location": this.user_inform.location,
               "coordinate": this.user_inform.coordinate,
@@ -658,22 +656,26 @@ new Vue({
               'Content-Type': 'application/json'
           };
 
-          // let xhr = new XMLHttpRequest()
-          //      xhr.open("post", url)
-          //      xhr.setRequestHeader("Content-type", "application/json")
-          //      xhr.send('data=' + JSON.stringify(data))
-          //      let executed = false
-          //      xhr.onreadystatechange = async function () {
-          //         if (!executed && xhr.status === 200) {
-          //             try {
-          //                let data = JSON.parse(xhr.responseText);
-          //                console.log("data: " + data['result']);
-          //                 executed = true;
-          //             } catch (e) {
-          //             }
-          //         }
-          //     }
-          //     console.log(data)
+        fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(data)
+        })
+        .then(response => response.text())
+        .then(data => console.log(data))
+        .catch(error => console.error('Error:', error));
+      },
+
+        // 保存久坐时间
+      postSitTime() {
+         const url = "http://127.0.0.1:5000/save-sit-time";
+
+          let data = {
+              "time": this.user_inform.sit_time,
+          }
+          const headers = {
+              'Content-Type': 'application/json'
+          };
 
         fetch(url, {
             method: 'POST',
