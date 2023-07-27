@@ -346,7 +346,7 @@ new Vue({
                             "follow": this.interact_perception_follow,
                             "join": this.interact_perception_follow,
                             "chat": this.interact_perception_follow,
-                            "indifferent": this.interact_perception_follow 
+                            "indifferent": this.interact_perception_follow
                         }
                     },
                     "items": [],
@@ -763,7 +763,7 @@ new Vue({
             xhr.open("post", url)
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
             xhr.send()
-            
+
         },
         postControlEyes() {
             let url = "http://127.0.0.1:5000/api/control-eyes";
@@ -887,8 +887,8 @@ new Vue({
                   // _this.getMsgList()
                 //    document.querySelector('#textarea').value = '';
                 //    document.querySelector('#textarea').focus();
-                    const responseData = JSON.parse(xhr.responseText);
-                    console.log("Response data:", responseData);
+                //     const responseData = JSON.parse(xhr.responseText);
+                //     console.log("Response data:", responseData);
                 }
             }
 
@@ -935,7 +935,7 @@ new Vue({
                 }
             }
         },
-        addMsg(data){get
+        addMsg(data){
             let _this = this;
             let info = {
                 'content' : data['content'] ,
