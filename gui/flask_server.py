@@ -99,91 +99,50 @@ def receive_data():
         return jsonify({"status": "error", "message": str(e)})
 
 
-# 加载用药信息
-# @__app.route('/get-medicine', methods=['GET'])
-# def get_medicine():
-#     # try:
-#         # 设置SQLite数据库连接
+
+# @__app.route('/api/get-medicine', methods=['GET'])
+# def get_medicine_by_id():
+#     try:
+#         # 连接SQLite数据库
 #         conn = sqlite3.connect('fay.db')
 #         cursor = conn.cursor()
-#         # 假设要获取id为1的药物信息
-#         med_id = 1
 #
-#         # 从数据库中获取指定id的药物信息
-#         cursor.execute('''SELECT * FROM med_inform WHERE id = ?''', (med_id))
+#         med_id = 2
+#         # 从数据库中获取特定id的用药信息
+#         cursor.execute('SELECT * FROM med_inform WHERE id = ?', (med_id,))
 #         row = cursor.fetchone()
-#         print(row)
 #
 #         # 关闭数据库连接
+#         cursor.close()
 #         conn.close()
 #
-#         # 如果存在指定id的药物信息，则将其转换为字典
-#         if row is not None:
+#         # 将查询结果转换为字典
+#
+#         if row:
 #             med_dict = {
-#                 "med_name": row[0],
-#                 "med_spec": row[1],
-#                 "med_usage": row[2],
-#                 "med_freq": row[3],
-#                 "med_dosage": row[4],
-#                 # "med_num": row[5]
+#                 "med_name": row[1],
+#                 "med_spec": row[2],
+#                 "med_usage": row[3],
+#                 "med_freq": row[4],
+#                 "med_dosage": row[5],
+#                 "time": row[6]
 #             }
-#             print(med_dict)  # 输出指定id的药物信息
+#             response = {
+#                 "status": "success",
+#                 "data": med_dict
+#
+#             }
 #         else:
-#             print("未找到指定id的药物信息")
+#             response = {
+#                 "status": "error",
+#                 "message": "未找到该用药信息"
+#             }
 #
-#         # 将字典列表转换为JSON格式的字符串
-#         response_json_str = json.dumps({"status": "success", "data": med_dict})
+#         # 将字典转换为JSON格式的响应并返回
+#         return jsonify(response)
 #
-#         # 返回JSON字符串
-#         return response_json_str
-
-    # except Exception as e:
-    #     return jsonify({"status": "error", "message": str(e)})
-
-@__app.route('/api/get-medicine', methods=['GET'])
-def get_medicine_by_id():
-    try:
-        # 连接SQLite数据库
-        conn = sqlite3.connect('fay.db')
-        cursor = conn.cursor()
-
-        med_id = 2
-        # 从数据库中获取特定id的用药信息
-        cursor.execute('SELECT * FROM med_inform WHERE id = ?', (med_id,))
-        row = cursor.fetchone()
-
-        # 关闭数据库连接
-        cursor.close()
-        conn.close()
-
-        # 将查询结果转换为字典
-
-        if row:
-            med_dict = {
-                "med_name": row[1],
-                "med_spec": row[2],
-                "med_usage": row[3],
-                "med_freq": row[4],
-                "med_dosage": row[5],
-                "time": row[6]
-            }
-            response = {
-                "status": "success",
-                "data": med_dict
-
-            }
-        else:
-            response = {
-                "status": "error",
-                "message": "未找到该用药信息"
-            }
-
-        # 将字典转换为JSON格式的响应并返回
-        return jsonify(response)
-
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)})
-
+#     except Exception as e:
+#         return jsonify({"status": "error", "message": str(e)})
 
 
 @__app.route("/robot/send_msg", methods=["POST"])
@@ -198,6 +157,7 @@ def receive_message():
     response = {'message': 'send successfully'}
     return jsonify(response), 200  # 返回响应和状态码
 
+
 @__app.route("/robot/control", methods=["POST"])
 def robot_control():
     payload = request.json
@@ -209,7 +169,6 @@ def robot_control():
     client.send_sport_robot(kafka_ip, topic_name, message)
     response = {'message': 'send successfully'}
     return jsonify(response), 200  # 返回响应和状态码
-
 
 
 @__app.route('/api/submit', methods=['post'])
@@ -231,7 +190,7 @@ def api_submit():
 
 
 # 接收图片
-@__app.route('/receive-image', methods=['GET'])
+@__app.route('/receive-image', methods=['POST'])
 def receive_image():
     try:
         # 获取POST请求中的JSON数据，其中包含Base64编码的图片数据
@@ -253,16 +212,7 @@ def receive_image():
 
             with open(image_url, 'wb') as f:
                 f.write(image_data)
-            # 假设 image_base64 是包含 Base64 编码的字符串
-            # image_data = base64.b64decode(image_base64)
-            # print(image_data)
-            # txt_file_url = "C:/Users/11605/Desktop/base64_data.txt"  # 设置 txt 文件保存路径
-            # with open(txt_file_url, 'w') as f:  # 将写入模式改为文本写入模式
-            #     f.write(image_data.decode('utf-8'))  # 将二进制数据写入到 txt 文件中
-                # 返回图片文件的URL给前端
-                # return jsonify({"status": "success", "image_url": "/static/picture.jpg"})
-            # image_url = f'http://127.0.0.1:5000/{image_path}'  # 设置图片文件在服务器上的访问URL
-            # return jsonify({"status": "success", "image_data": "图片接收成功"})
+
 
             return jsonify({"status": "success", "image_url": image_url})
 
@@ -286,7 +236,7 @@ def get_location():
 
 
 # 加载用药信息
-@__app.route('/get-medcine', methods=['GET'])
+@__app.route('/recieve-medcine', methods=['GET'])
 def get_medcine():
     med_data = {
         'med_name': "头孢克肟颗粒",
@@ -294,7 +244,9 @@ def get_medcine():
         'med_usage': "口服",
         'med_freq': "2次/天",
         'med_dosage': "50mg",
+        'med_num': "1"
     }
+    print(med_data)
     return jsonify({"text": med_data})
 
 
@@ -317,6 +269,7 @@ def get_robot_data():
 #                   user_type TEXT NOT NULL
 #                   )''')
 # conn.commit()
+
 
 @__app.route('/save-user-info', methods=['POST'])
 def save_user_info():

@@ -454,47 +454,48 @@ new Vue({
               // 加载用药信息
         async getMedicine(){
              // 使用AJAX发送GET请求获取用药信息
-                fetch('/get-medcine')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            this.user_inform.med_inform = data.data;
-                            console.log(data.data)
-                            console.log(this.user_inform.med_inform)
-                        } else {
-                            console.error('无法获取用药信息：' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('请求错误：', error);
-                    });
-            // try {
-            //     const response = await fetch('http://127.0.0.1:5000/get-medicine', {
-            //         method: 'GET'
-            //     });
-            //
-            //     if (response.ok) {
-            //         let data = await response.json();
-            //         console.log(data)
-            //         let textData = data.text;
-            //          console.log(textData)
-            //
-            //         // const textPlaceholder = document.getElementById('text-placeholder');
-            //         // textPlaceholder.innerText = textData;
-            //         this.user_inform.med_inform.name = textData.med_name;
-            //          this.user_inform.med_inform.spec = textData.med_spec;
-            //          this.user_inform.med_inform.usage = textData.med_usage;
-            //          this.user_inform.med_inform.freq = textData.med_freq;
-            //          this.user_inform.med_inform.dosage = textData.med_dosage;
-            //         console.log("用药信息"+this.user_inform.med_inform.name);
-            //         // this.user_inform.gender = textData.user_gender;
-            //         // this.user_inform.med_inform.name = response.data;
-            //     } else {
-            //         console.error('Failed to fetch the text data.');
-            //     }
-            // } catch (error) {
-            //     console.error(error);
-            // }
+             //    fetch('/get-medcine')
+             //        .then(response => response.json())
+             //        .then(data => {
+             //            if (data.status === 'success') {
+             //                this.user_inform.med_inform = data.data;
+             //                console.log(data.data)
+             //                console.log(this.user_inform.med_inform)
+             //            } else {
+             //                console.error('无法获取用药信息：' + data.message);
+             //            }
+             //        })
+             //        .catch(error => {
+             //            console.error('请求错误：', error);
+             //        });
+            try {
+                const response = await fetch('http://127.0.0.1:5000/recieve-medcine', {
+                    method: 'GET'
+                });
+
+                if (response.ok) {
+                    let data = await response.json();
+                    console.log(data)
+                    let textData = data.text;
+                     console.log(textData)
+
+                    // const textPlaceholder = document.getElementById('text-placeholder');
+                    // textPlaceholder.innerText = textData;
+                    this.user_inform.med_inform.name = textData.med_name;
+                     this.user_inform.med_inform.spec = textData.med_spec;
+                     this.user_inform.med_inform.usage = textData.med_usage;
+                     this.user_inform.med_inform.freq = textData.med_freq;
+                     this.user_inform.med_inform.dosage = textData.med_dosage;
+                      this.user_inform.med_inform.num = textData.med_num;
+                    console.log("用药信息"+this.user_inform.med_inform.name);
+                    // this.user_inform.gender = textData.user_gender;
+                    // this.user_inform.med_inform.name = response.data;
+                } else {
+                    console.error('Failed to fetch the text data.');
+                }
+            } catch (error) {
+                console.error(error);
+            }
         },
 
         // 加载位置

@@ -7,11 +7,11 @@ def image_to_base64(image_path):
         return base64.b64encode(img_file.read()).decode('utf-8')
 
 # 指定要发送的图片
-image_path = r"C:/Users/11605/Desktop/picture11.jpg"
+image_path = r"C:/Users/11605/Desktop/test.jpg"
 image_base64 = image_to_base64(image_path)
 print(image_base64)
 # 请求的 URL
-url = "http://127.0.0.1:5000/receive-image"
+url = "http://192.168.3.18:5000/receive-image"
 
 # 创建请求的 JSON 数据
 data = {
