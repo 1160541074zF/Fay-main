@@ -907,7 +907,7 @@ new Vue({
         },
         getMsgList(){
             let _this = this;
-            let url = "http://192.168.3.48:5000/api/get-msg";
+            let url = "http://localhost:5000/api/get-msg";
             let xhr = new XMLHttpRequest()
             xhr.open("post", url)
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
