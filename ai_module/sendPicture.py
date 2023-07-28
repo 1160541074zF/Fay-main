@@ -5,7 +5,8 @@ import base64
 
 def send_picture():
     url = "http://192.168.3.48:5000/receive-image"
-    image_path = "C:/Users/11605/Desktop/test.jpg"
+    # url = "http://127.0.0.1:5000/receive-image"
+    image_path = "C:/Users/11605/Desktop/111.jpg"
     data = image_to_base64(image_path)
     payload = json.dumps({
         "image_base64": image_to_base64(image_path)
@@ -14,7 +15,7 @@ def send_picture():
     headers = {
         'Content-Type': 'application/json'
     }
-    response = requests.request("POST", url, headers=headers, data=payload)
+    response = requests.request("GET", url, headers=headers, data=payload)
     print(response.text)
 
 

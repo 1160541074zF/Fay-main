@@ -190,7 +190,7 @@ def api_submit():
 
 
 # 接收图片
-@__app.route('/receive-image', methods=['POST'])
+@__app.route('/receive-image', methods=['GET'])
 def receive_image():
     try:
         # 获取POST请求中的JSON数据，其中包含Base64编码的图片数据

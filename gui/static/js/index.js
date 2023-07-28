@@ -419,7 +419,8 @@ new Vue({
         //                 let imageData = xhr.response;
         //
         //                 // 将图片数据转换为DataURL
-        //                 let imageBase64 = 'data:image/jpeg;base64,' + btoa(String.fromCharCode(...new Uint8Array(imageData)));
+        //                 let imageBase64 = 'data:image/jpeg;base64,' + btoa(String.fromCharCode(...new Uint8Ar
+        //                 ray(imageData)));
         //
         //                 // 将DataURL赋值给<img>标签的src属性，以显示图片
         //                 document.getElementById('image').src = imageBase64;
@@ -963,8 +964,8 @@ new Vue({
             let hh = current_date.getHours()<10 ? '0'+current_date.getHours() : current_date.getHours();
             let mf = current_date.getMinutes()<10 ? '0'+current_date.getMinutes() : current_date.getMinutes();
             let ss = current_date.getSeconds()<10 ? '0'+current_date.getSeconds() : current_date.getSeconds();
-            let gettime = yy+'-'+mm+'-'+dd+' '+hh+':'+mf+':'+ss;
-            return gettime;
+            let get_time = yy+'-'+mm+'-'+dd+' '+hh+':'+mf+':'+ss;
+            return get_time;
            
         }
 
