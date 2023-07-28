@@ -20,6 +20,7 @@ from core import fay_core
 from core.content_db import Content_Db
 from robot import client
 from ai_module import yolov8
+from ai_module import image_posture
 from ai_module import image_behavior
 from datetime import datetime, timedelta
 
@@ -267,7 +268,8 @@ def get_location():
         # 'user_name': "张三",
         # 'user_gender': "男",
         "location": "卧室 ",
-        "coordinate": "x: 0.531435847282 , y: 1.22645330429, z: 0.0,x: 0.0,y: 0.0,z: -0.0285912500452,w: 0.999591186646"
+        "coordinate": "x: 0.531435847282 , y: 1.22645330429, z: 0.0,x: 0.0,y: 0.0,z: -0.0285912500452,w: 0.999591186646",
+        "sittime": "110"
     }
     return jsonify({"text": location_data})
 
@@ -487,6 +489,11 @@ def api_post_location():
 def home_get():
     return __get_template()
 
+@__app.route('/test/table', methods=['get'])
+def table():
+
+    return 200
+
 @__app.route('/behavior/detection', methods=['post'])
 def behavior_detection():
     try:
@@ -506,7 +513,23 @@ def behavior_detection():
         row = cursor.fetchone()
         id, timespan, date_time = row
 
-        if "坐" in result_describe:
+        if '倒' in result_describe or '地' in result_describe:
+            # 机器人播报
+            url = "http://192.168.3.76:5000/robot/send_msg"
+            payload = json.dumps({
+                "kafka_ip": "8.130.108.7:9092",
+                "topic_name": "reminder",
+                "message": {
+                    "type": "voice",
+                    "content": "检测到老人跌倒"
+                }
+            })
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            response = requests.request("POST", url, headers=headers, data=payload)
+            print(response.text)
+        elif "坐" in result_describe:
             # 更新数据库
             if row:
                 new_timespan = timespan + 10
@@ -522,7 +545,7 @@ def behavior_detection():
                     conn.commit()
 
                     # 调用语音播报接口
-                    url = "http://127.0.0.1:5000/robot/send_msg"
+                    url = "http://192.168.3.76:5000/robot/send_msg"
                     payload = json.dumps({
                         "kafka_ip": "8.130.108.7:9092",
                         "topic_name": "reminder",
@@ -538,34 +561,21 @@ def behavior_detection():
                     print(response.text)
 
                     # 调用视频播放接口
-                    url = "http://192.168.3.37:6000/robot/control"
+                    url = "http://192.168.3.76:5000/robot/control"
                     payload = json.dumps({
                         "kafka_ip": "8.130.108.7:9092",
                         "topic_name": "control",
                         "command": "play_video"
                     })
+                    headers = {
+                        'Content-Type': 'application/json'
+                    }
                     response = requests.request("POST", url, headers=headers, data=payload)
                     print(response.text)
             else:
                 print("表中没有数据")
 
             # 更新前端数据
-        elif '倒' in result_describe or '地' in result_describe:
-            # 机器人播报
-            url = "http://127.0.0.1:5000/robot/send_msg"
-            payload = json.dumps({
-                "kafka_ip": "8.130.108.7:9092",
-                "topic_name": "reminder",
-                "message": {
-                    "type": "voice",
-                    "content": "检测到老人跌倒"
-                }
-            })
-            headers = {
-                'Content-Type': 'application/json'
-            }
-            response = requests.request("POST", url, headers=headers, data=payload)
-            print(response.text)
         else:
             cursor.execute("UPDATE sedentary_info SET timespan=? WHERE id=?",
                            (0, id))
