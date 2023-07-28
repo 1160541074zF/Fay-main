@@ -48,10 +48,8 @@
 {#                                            #}
 {#                                        </div>#}
                                         <div class="character_right">
-
                                             <li>用户头像：</li>
-<!--                                            <img src="http://127.0.0.1:5000/receive-image" alt="Loaded Image">-->
-                                            <img src="{{ url_for('static',filename='source/img/picture.jpg') }}" width="200" height="150" alt="图片" />
+                                            <img id = "myImage" src="{{ url_for('static',filename='source/img/picture.jpg') }}" width="200" height="150" alt="图片" />
                                         </div>
                                           <li>
                                             <p>姓名：</p>
@@ -185,16 +183,17 @@
                                      <p>久坐时间：</p>
                                      <el-input v-model="user_inform.sit_time" placeholder="请输入内容" style="width: 300px;"></el-input>
                                     </li>
+<!--                                    <li>-->
+<!--                                     <p>久坐时间：</p>-->
+<!--                                     <el-input v-model="user_inform.sit_time" placeholder="请输入内容" style="width: 300px;"></el-input>-->
+<!--                                    </li>-->
 
                                 </div>
-                                        <el-button type="button" style="width:100px;height: 40px" @click=postStateInform()>保存</el-button>
+                                        <el-button type="button" style="width:100px;height: 40px" @click=postLocationInform()>保存</el-button>
                                         <el-button type="button" style="width:100px;height: 40px" @click=getLocation()>刷新</el-button>
                                 <div class="right-side">
 
-                                    <li>
-                                     <p>久坐时间：</p>
-                                     <el-input v-model="user_inform.sit_time" placeholder="请输入内容" style="width: 375px;"></el-input>
-                                    </li>
+
 
                                 </div>
 
@@ -266,7 +265,7 @@
                                     <button id="send-btn4" @click="send(5)" style="margin-left: 25px;">安全检测</button>
                                     <button id="send-btn5" @click="send(6)" style="margin-left: 25px;">情绪识别</button>
                                     <button id="send-btn1" @click="send(2)" style="margin-left: 25px;">Fay</button>
-                                    <button id="send-btn2" @click="send(3)" style="margin-left: 25px;">test</button>
+                                    <button id="send-btn2" @click="send(3)" style="margin-left: 25px;">聊天模式</button>
 
 <!--                                    <button id="send-btn" @click="send(3)">连续对话</button>-->
 

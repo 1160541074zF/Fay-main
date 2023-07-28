@@ -30,7 +30,7 @@ def question(cont, prompt=None):
         if count < 3:
             time.sleep(15)
             return question(cont)
-        return 'tochat语音交互当前繁忙，请稍后重试'
+        return 'ecarebot语音交互当前繁忙，请稍后重试'
 
 # if __name__ == "__main__":
 #     print(ask("nihao"))

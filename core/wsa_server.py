@@ -151,14 +151,14 @@ __instance: MyServer = None
 __web_instance: MyServer = None
 
 
-def new_instance(host='0.0.0.0', port=10000) -> MyServer:
+def new_instance(host='localhost', port=10000) -> MyServer:
     global __instance
     if __instance is None:
         __instance = HumanServer(host, port)
     return __instance
 
 
-def new_web_instance(host='0.0.0.0', port=10000) -> MyServer:
+def new_web_instance(host='localhost', port=10000) -> MyServer:
     global __web_instance
     if __web_instance is None:
         __web_instance = WebServer(host, port)
