@@ -237,7 +237,7 @@ new Vue({
         },
         getData() {
             let _this = this;
-            let url = "http://127.0.0.1:5000/api/get-data";
+            let url = "http://localhost:5000/api/get-data";
             let xhr = new XMLHttpRequest()
             xhr.open("post", url)
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
@@ -311,7 +311,7 @@ new Vue({
             }
         },
         postData() {
-            let url = "http://127.0.0.1:5000/api/submit";
+            let url = "http://localhost:5000/api/submit";
             let send_data = {
                 "config": {
                     "source": {
@@ -346,7 +346,7 @@ new Vue({
                             "follow": this.interact_perception_follow,
                             "join": this.interact_perception_follow,
                             "chat": this.interact_perception_follow,
-                            "indifferent": this.interact_perception_follow 
+                            "indifferent": this.interact_perception_follow
                         }
                     },
                     "items": [],
@@ -390,7 +390,7 @@ new Vue({
         // async processText() {
         //     try {
         //
-        //         const response = await axios.post('http://127.0.0.1:5000/process-text', {
+        //         const response = await axios.post('http://localhost:5000/process-text', {
         //             text: this.inputText
         // });
         //
@@ -403,7 +403,7 @@ new Vue({
 
         // 加载图片
         // getPicture() {
-        //     let url = "http://127.0.0.1:5000/receive-image";
+        //     let url = "http://localhost:5000/receive-image";
         //     // 创建一个新的XMLHttpRequest对象
         //     const xhr = new XMLHttpRequest();
         //     xhr.open("post", url)
@@ -444,7 +444,7 @@ new Vue({
 
         // refreshImage() {
         //     // 获取图片的URL，这里可以通过 Ajax 或其他方式从后端获取新图片的URL
-        //     let imageUrl = "http://127.0.0.1:5000/receive-image";
+        //     let imageUrl = "http://localhost:5000/receive-image";
         //
         //     // 更新图片的src属性，加载新的图片
         //     document.getElementById("loadedImage").src = imageUrl + "?" + new Date().getTime();
@@ -470,7 +470,7 @@ new Vue({
              //            console.error('请求错误：', error);
              //        });
             try {
-                const response = await fetch('http://127.0.0.1:5000/recieve-medcine', {
+                const response = await fetch('http://localhost:5000/recieve-medcine', {
                     method: 'GET'
                 });
 
@@ -502,7 +502,7 @@ new Vue({
         // 加载位置
         async getLocation() {
             try {
-                const response = await fetch('http://127.0.0.1:5000/api/get-location', {
+                const response = await fetch('http://localhost:5000/api/get-location', {
                     method: 'GET'
                 });
 
@@ -528,7 +528,7 @@ new Vue({
     //     async getDataFromBackend() {
     //         try {
     //         // 发送异步请求获取后端数据
-    //         const response = await axios.get('http://127.0.0.1:5000/api/get-text');
+    //         const response = await axios.get('http://localhost:5000/api/get-text');
     //
     //         // 更新数据到组件中，实现实时更新
     //         this.user_name = response.data; // 假设后端返回的数据是一个字符串
@@ -538,7 +538,7 @@ new Vue({
     // },
         // 保存用户信息
       postUserInform() {
-         const url = "http://127.0.0.1:5000/save-user-info";
+         const url = "http://localhost:5000/save-user-info";
         //  let data = {
         //     kafka_ip: "8.130.108.7:9092",
         //     topic_name: "reminder",
@@ -592,7 +592,7 @@ new Vue({
 
            // 保存用药信息
       postMedInform() {
-         const url = "http://127.0.0.1:5000/save-medicine-info";
+         const url = "http://localhost:5000/save-medicine-info";
         //  let data = {
         //     kafka_ip: "8.130.108.7:9092",
         //     topic_name: "reminder",
@@ -648,7 +648,7 @@ new Vue({
       },
               // 保存位置信息
       postLocationInform() {
-         const url = "http://127.0.0.1:5000/save-location-info";
+         const url = "http://localhost:5000/save-location-info";
 
           let data = {
               "location": this.user_inform.location,
@@ -670,7 +670,7 @@ new Vue({
 
         // 保存久坐时间
       postSitTime() {
-         const url = "http://127.0.0.1:5000/save-sit-time";
+         const url = "http://localhost:5000/save-sit-time";
 
           let data = {
               "time": this.user_inform.sit_time,
@@ -691,7 +691,7 @@ new Vue({
 
         // 提交用户信息
         // postUserInform() {
-        //      let url = "http://127.0.0.1:5000/api/post-user-inform";
+        //      let url = "http://localhost:5000/api/post-user-inform";
         //      let send_data = {
         //           "user_name": this.user_inform.name,
         //           "user_gender": this.user_inform.gender,
@@ -723,7 +723,7 @@ new Vue({
 
 
         // getLocation() {
-        //     let url = "http://127.0.0.1:5000/api/get-location";
+        //     let url = "http://localhost:5000/api/get-location";
         //     let xhr = new XMLHttpRequest();
         //     xhr.open("get", url)
         //     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
@@ -739,7 +739,7 @@ new Vue({
         // },
 
         // postLocation() {
-        //     let url = "http://127.0.0.1:5000/api/post-location";
+        //     let url = "http://localhost:5000/api/post-location";
         //     let xhr = new XMLHttpRequest()
         //     xhr.open("post", url)
         //     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
@@ -749,7 +749,7 @@ new Vue({
         postStartLive() {
             this.postData()
             this.live_state = 2
-            let url = "http://127.0.0.1:5000/api/start-live";
+            let url = "http://localhost:5000/api/start-live";
             let xhr = new XMLHttpRequest()
             xhr.open("post", url)
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
@@ -759,15 +759,15 @@ new Vue({
 
         postStopLive() {
             this.live_state = 3
-            let url = "http://127.0.0.1:5000/api/stop-live";
+            let url = "http://localhost:5000/api/stop-live";
             let xhr = new XMLHttpRequest()
             xhr.open("post", url)
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
             xhr.send()
-            
+
         },
         postControlEyes() {
-            let url = "http://127.0.0.1:5000/api/control-eyes";
+            let url = "http://localhost:5000/api/control-eyes";
             let xhr = new XMLHttpRequest()
             xhr.open("post", url)
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
@@ -872,7 +872,7 @@ new Vue({
                document.querySelector(".content").scrollTop = height;
            },1000)
             _this.send_msg = ''
-            let url = "http://127.0.0.1:5000/api/send";
+            let url = "http://localhost:5000/api/send";
             let send_data = {
                 "msg": text,
                 "sendto" : sendto
@@ -888,8 +888,8 @@ new Vue({
                   // _this.getMsgList()
                 //    document.querySelector('#textarea').value = '';
                 //    document.querySelector('#textarea').focus();
-                    const responseData = JSON.parse(xhr.responseText);
-                    console.log("Response data:", responseData);
+                //     const responseData = JSON.parse(xhr.responseText);
+                //     console.log("Response data:", responseData);
                 }
             }
 
@@ -908,7 +908,7 @@ new Vue({
         },
         getMsgList(){
             let _this = this;
-            let url = "http://127.0.0.1:5000/api/get-msg";
+            let url = "http://localhost:5000/api/get-msg";
             let xhr = new XMLHttpRequest()
             xhr.open("post", url)
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
@@ -936,7 +936,7 @@ new Vue({
                 }
             }
         },
-        addMsg(data){get
+        addMsg(data){
             let _this = this;
             let info = {
                 'content' : data['content'] ,
