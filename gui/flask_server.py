@@ -486,103 +486,106 @@ def api_post_location():
 def home_get():
     return __get_template()
 
-@__app.route('/test/table', methods=['get'])
-def table():
-
-    return 200
-
-@__app.route('/behavior/detection', methods=['post'])
-def behavior_detection():
+@__app.route('/posture/recognition', methods=['post'])
+def posture_recognition():
     try:
-        # 图像识别
+        # 图片 时间数据
         request_data = request.json
         image = request_data.get("image")
-        # 图像识别
-        result = image_behavior.behavior_detection(image)
-        # print(result)
-        result_data = json.loads(result)
-        result_describe = result_data['result']
-        print(result_describe)
-        # 获取最新的久坐数据
+        time = request_data.get("time")
+        # 图像识别大模型识别老人姿态
+        posture = image_posture.posture_recognition(image)
+        print("姿态识别结果" + posture)
+        print("数据更新时间" + time)
         conn = sqlite3.connect("fay.db")
         cursor = conn.cursor()
+        # 保存老人姿态数据
+        cursor.execute("insert into posture_info (posture,time) values(?,?)",
+                                           (posture, time))
+        conn.commit()
+        # 获取最新的久坐数据
         cursor.execute("SELECT id, timespan, date_time FROM sedentary_info ORDER BY id DESC LIMIT 1")
         row = cursor.fetchone()
         id, timespan, date_time = row
-
-        if '倒' in result_describe or '地' in result_describe:
-            # 机器人播报
-            url = "http://192.168.3.76:5000/robot/send_msg"
-            payload = json.dumps({
-                "kafka_ip": "8.130.108.7:9092",
-                "topic_name": "reminder",
-                "message": {
-                    "type": "voice",
-                    "content": "检测到老人跌倒"
-                }
-            })
-            headers = {
-                'Content-Type': 'application/json'
-            }
-            response = requests.request("POST", url, headers=headers, data=payload)
-            print(response.text)
-        elif "坐" in result_describe:
-            # 更新数据库
-            if row:
-                new_timespan = timespan + 10
-                new_date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                cursor.execute("UPDATE sedentary_info SET timespan=?,date_time=? WHERE id=?",
-                               (new_timespan, new_date_time, id))
-                conn.commit()
-                # conn.close()
-                if new_timespan >= 120:  # 当前久坐时长到达2小时
-                    # 插入一条新数据
-                    cursor.execute("insert into sedentary_info (id,timespan,date_time) values(?,?,?)",
-                                   (id + 1, 0, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-                    conn.commit()
-
-                    # 调用语音播报接口
-                    url = "http://192.168.3.76:5000/robot/send_msg"
-                    payload = json.dumps({
-                        "kafka_ip": "8.130.108.7:9092",
-                        "topic_name": "reminder",
-                        "message": {
-                            "type": "voice",
-                            "content": "您已久坐两小时，快起身跟我一起运动下吧！"
-                        }
-                    })
-                    headers = {
-                        'Content-Type': 'application/json'
-                    }
-                    response = requests.request("POST", url, headers=headers, data=payload)
-                    print(response.text)
-
-                    # 调用视频播放接口
-                    url = "http://192.168.3.76:5000/robot/control"
-                    payload = json.dumps({
-                        "kafka_ip": "8.130.108.7:9092",
-                        "topic_name": "control",
-                        "command": "play_video"
-                    })
-                    headers = {
-                        'Content-Type': 'application/json'
-                    }
-                    response = requests.request("POST", url, headers=headers, data=payload)
-                    print(response.text)
-            else:
-                print("表中没有数据")
-
-            # 更新前端数据
-        else:
-            cursor.execute("UPDATE sedentary_info SET timespan=? WHERE id=?",
-                           (0, id))
+        print("最新久坐数据" + row)
+        # ===================久坐时长测试======================
+        # posture = 4
+        # ===========================
+        if posture == 2:
+            # 久坐处理：更新久坐时长、判断是否久坐
+            # ===================久坐时长测试======================
+            # date_time = "2023-07-26 12:30:00"
+            # time = "2023-07-26 14:45:00"
+            # 新增15分钟
+            # ===================久坐时长测试======================
+            # 1.更新久坐时长
+            datetime1 = datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S')
+            datetime2 = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
+            time_interval = datetime2 - datetime1
+            new_timespan = time_interval.total_seconds() / 60 + timespan
+            cursor.execute("UPDATE sedentary_info SET timespan=?,date_time=? WHERE id=?",
+                           (new_timespan, time, id))
             conn.commit()
-            # conn.close()
-            print("字符串中不包含坐着，久坐时间清0")
-
-        # <Response [200]>
-        return jsonify({'result': result_describe})
-
+            print("更新久坐时长")
+            # 2.判断是否久坐
+            if new_timespan >= 120:
+                print("老人久坐")
+                # 1.新增久坐数据
+                cursor.execute("insert into sedentary_info (timespan,date_time) values(?,?)",
+                               (0, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                conn.commit()
+                # 2.调用语音播报接口
+                url = "http://192.168.3.67:5000/robot/send_msg"
+                payload = json.dumps({
+                    "kafka_ip": "8.130.108.7:9092",
+                    "topic_name": "reminder",
+                    "message": {
+                        "type": "voice",
+                        "content": "您已久坐两小时，快起身跟我一起运动下吧！"
+                    }
+                })
+                headers = {
+                    'Content-Type': 'application/json'
+                }
+                response = requests.request("POST", url, headers=headers, data=payload)
+                print(response.text)
+                # 3.调用视频播放接口
+                url = "http://192.168.3.67:5000/robot/control"
+                payload = json.dumps({
+                    "kafka_ip": "8.130.108.7:9092",
+                    "topic_name": "control",
+                    "command": "play_video"
+                })
+                headers = {
+                    'Content-Type': 'application/json'
+                }
+                response = requests.request("POST", url, headers=headers, data=payload)
+                print(response.text)
+        else:
+            # 清空久坐时长
+            print("清空久坐时长")
+            cursor.execute("UPDATE sedentary_info SET timespan=? WHERE id=?",
+                                       (0, id))
+            conn.commit()
+            if posture == 1:
+                # 跌倒处理：语音播报
+                print("老人跌倒")
+                # 机器人播报
+                url = "http://192.168.3.67:5000/robot/send_msg"
+                payload = json.dumps({
+                    "kafka_ip": "8.130.108.7:9092",
+                    "topic_name": "reminder",
+                    "message": {
+                        "type": "voice",
+                        "content": "检测到老人跌倒"
+                    }
+                })
+                headers = {
+                    'Content-Type': 'application/json'
+                }
+                response = requests.request("POST", url, headers=headers, data=payload)
+                print(response.text)
+        return jsonify({'success': '请求成功'}), 200
     except sqlite3.Error as e:
         print(e)
         return jsonify({'error': '请求处理出错：' + str(e)}), 500
