@@ -316,7 +316,7 @@ def save_medicine_info():
             med_usage = med_info.get('med_usage')
             med_freq = med_info.get('med_freq')
             med_dosage = med_info.get('med_dosage')
-            med_time = med_info.get('med_time')
+            med_num = med_info.get('med_num')
 
             # 设置SQLite数据库连接
             conn = sqlite3.connect('fay.db')
@@ -325,8 +325,8 @@ def save_medicine_info():
             print(cursor)
 
             # 插入数据到数据库
-            cursor.execute('''INSERT INTO med_inform (med_name, med_spec, med_usage, med_freq, med_dosage, med_time)
-                              VALUES (?, ?, ?, ?, ?, ?)''', (med_name, med_spec, med_usage, med_freq, med_dosage, time))
+            cursor.execute('''INSERT INTO med_inform (med_name, med_spec, med_usage, med_freq, med_dosage, med_num)
+                              VALUES (?, ?, ?, ?, ?, ?)''', (med_name, med_spec, med_usage, med_freq, med_dosage, med_num))
             conn.commit()
             cursor.close()
             conn.close()
