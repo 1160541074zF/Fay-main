@@ -20,7 +20,7 @@ from core import fay_core
 from core.content_db import Content_Db
 from robot import client
 from ai_module import yolov8
-from ai_module import image_posture
+# from ai_module import image_posture
 from ai_module import image_behavior
 from datetime import datetime, timedelta
 
@@ -191,7 +191,7 @@ def api_submit():
 
 
 # 接收图片
-@__app.route('/receive-image', methods=['GET'])
+@__app.route('/receive-image', methods=['POST'])
 def receive_image():
     try:
         # 获取POST请求中的JSON数据，其中包含Base64编码的图片数据
