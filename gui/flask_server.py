@@ -535,7 +535,7 @@ def posture_recognition():
                                (0, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
                 conn.commit()
                 # 2.调用语音播报接口
-                url = "http://192.168.3.67:5000/robot/send_msg"
+                url = "http://192.168.3.48:5000/robot/send_msg"
                 payload = json.dumps({
                     "kafka_ip": "8.130.108.7:9092",
                     "topic_name": "reminder",
@@ -550,7 +550,7 @@ def posture_recognition():
                 response = requests.request("POST", url, headers=headers, data=payload)
                 print(response.text)
                 # 3.调用视频播放接口
-                url = "http://192.168.3.67:5000/robot/control"
+                url = "http://192.168.3.48:5000/robot/control"
                 payload = json.dumps({
                     "kafka_ip": "8.130.108.7:9092",
                     "topic_name": "control",
@@ -571,7 +571,7 @@ def posture_recognition():
                 # 跌倒处理：语音播报
                 print("老人跌倒")
                 # 机器人播报
-                url = "http://192.168.3.67:5000/robot/send_msg"
+                url = "http://192.168.3.48:5000/robot/send_msg"
                 payload = json.dumps({
                     "kafka_ip": "8.130.108.7:9092",
                     "topic_name": "reminder",
