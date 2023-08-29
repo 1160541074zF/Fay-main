@@ -8,7 +8,7 @@ def image_to_base64(image_path):
         return base64.b64encode(img_file.read()).decode('utf-8')
 
 # 指定要发送的图片
-image_path = "G:\老人站立.jpg" #换成你自己的图片
+image_path = "G:\老人跌倒.jpg" #换成你自己的图片
 image_base64 = image_to_base64(image_path)
 
 # 请求的 URL
@@ -21,12 +21,11 @@ print(time)
 # 创建请求的 JSON 数据
 data = {
     "image": image_base64,
-    "time":time
+    # "time": "2023-08-29 10:00:00"
+    "time": time
 }
 
 # 发出 POST 请求
 response = requests.post(url, json=data)
 # response = requests.post(url, json=data).text
-# 输出响应的 JSON 数据
-# print(response.json())
 print(response.text)

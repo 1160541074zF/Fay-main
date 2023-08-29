@@ -19,9 +19,7 @@ from core import wsa_server
 from core import fay_core
 from core.content_db import Content_Db
 from robot import client
-from ai_module import yolov8
-# from ai_module import image_posture
-from ai_module import image_behavior
+from ai_module import yolov8, image_posture
 from datetime import datetime, timedelta
 
 __app = Flask(__name__)
@@ -486,6 +484,7 @@ def api_post_location():
 def home_get():
     return __get_template()
 
+# 行为识别接口：大模型识别结果、姿态结果、久坐时长
 @__app.route('/posture/recognition', methods=['post'])
 def posture_recognition():
     try:
@@ -493,99 +492,148 @@ def posture_recognition():
         request_data = request.json
         image = request_data.get("image")
         time = request_data.get("time")
-        # 图像识别大模型识别老人姿态
-        posture = image_posture.posture_recognition(image)
-        print("姿态识别结果" + posture)
-        print("数据更新时间" + time)
+        # 图像识别大模型结果
+        response = image_posture.posture_recognition(image)
+        # 大模型能够返回行为识别的结果
+        result_data = json.loads(response)
+        describe = result_data['result']
+        if '倒' in describe:
+            posture = 1
+        elif '躺' in describe:
+            posture = 4
+        elif '坐' in describe:
+            posture = 2
+        elif '站' in describe or '立' in describe:
+            posture = 3
         conn = sqlite3.connect("fay.db")
         cursor = conn.cursor()
-        # 保存老人姿态数据
-        cursor.execute("insert into posture_info (posture,time) values(?,?)",
-                                           (posture, time))
-        conn.commit()
+        # 获取上次姿态数据
+        cursor.execute("SELECT posture,time FROM posture_info ORDER BY id DESC LIMIT 1")
+        row_posture = cursor.fetchone()
+        posture_last = row_posture[0]
+        # posture_time_last = row_posture[1]
         # 获取最新的久坐数据
         cursor.execute("SELECT id, timespan, date_time FROM sedentary_info ORDER BY id DESC LIMIT 1")
         row = cursor.fetchone()
         id, timespan, date_time = row
-        print("最新久坐数据" + row)
-        # ===================久坐时长测试======================
-        # posture = 4
-        # ===========================
-        if posture == 2:
+        # 保存老人姿态数据
+        cursor.execute("insert into posture_info (posture,time) values(?,?)",
+                                           (posture, time))
+        conn.commit()
+        # 久坐时长
+        sittime = 0
+        # 测试
+        # print(f"大模型结果:{response}")
+        # print(f"姿态识别结果:{posture}")
+        # print(f"久坐时长:{timespan}")
+        # print(f"上次姿态:{posture_last}")
+
+        date_format = "%Y-%m-%d %H:%M:%S"
+        # 上次久坐数据的日期、当前照片久坐时间的日期
+        date1 = datetime.strptime(date_time, date_format)
+        date2 = datetime.strptime(time, date_format)
+
+        # 在白天开启久坐提醒功能，新增新的一天的数据
+        if date1.date() != date2.date() and 8 <= date2.hour < 20:
+            # print("新的一天")
+            # 新增一条久坐数据
+            cursor.execute("insert into sedentary_info (timespan,date_time) values(?,?)",
+                           (0, time))
+            conn.commit()
+        # 久坐处理
+        elif date1.date() == date2.date() and 8 <= date2.hour < 20:
             # 久坐处理：更新久坐时长、判断是否久坐
-            # ===================久坐时长测试======================
-            # date_time = "2023-07-26 12:30:00"
-            # time = "2023-07-26 14:45:00"
-            # 新增15分钟
-            # ===================久坐时长测试======================
-            # 1.更新久坐时长
-            datetime1 = datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S')
-            datetime2 = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
-            time_interval = datetime2 - datetime1
-            new_timespan = time_interval.total_seconds() / 60 + timespan
-            cursor.execute("UPDATE sedentary_info SET timespan=?,date_time=? WHERE id=?",
-                           (new_timespan, time, id))
-            conn.commit()
-            print("更新久坐时长")
-            # 2.判断是否久坐
-            if new_timespan >= 120:
-                print("老人久坐")
-                # 1.新增久坐数据
-                cursor.execute("insert into sedentary_info (timespan,date_time) values(?,?)",
-                               (0, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-                conn.commit()
-                # 2.调用语音播报接口
-                url = "http://192.168.3.48:5000/robot/send_msg"
-                payload = json.dumps({
-                    "kafka_ip": "8.130.108.7:9092",
-                    "topic_name": "reminder",
-                    "message": {
-                        "type": "voice",
-                        "content": "您已久坐两小时，快起身跟我一起运动下吧！"
+            if posture == 2:
+                # 1.开始久坐_达到一次久坐时长，新增久坐数据
+                if timespan >= 120:
+                    # print("久坐开始")
+                    # 新增一条久坐数据
+                    cursor.execute("insert into sedentary_info (timespan,date_time) values(?,?)",
+                                   (0, time))
+                    conn.commit()
+                # 2.开始久坐_更新久坐时刻
+                elif posture_last != 2 and timespan == 0:
+                    # print("久坐开始")
+                    # 更新开始久坐的时间
+                    cursor.execute("UPDATE sedentary_info SET date_time=? WHERE id=?",
+                                   (time, id))
+                    conn.commit()
+                # 持续久坐
+                else:
+                    # print("持续久坐，更新久坐时长")
+                    # 1.更新久坐时长
+                    datetime1 = datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S')
+                    datetime2 = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
+                    time_interval = datetime2 - datetime1
+                    new_timespan = time_interval.total_seconds() / 60 + timespan
+                    # 久坐时长
+                    sittime = new_timespan
+                    cursor.execute("UPDATE sedentary_info SET timespan=?,date_time=? WHERE id=?",
+                                   (new_timespan, time, id))
+                    conn.commit()
+                    # 2.判断是否久坐
+                    if new_timespan >= 120:
+                        # print("老人久坐")
+                        # 调用语音播报接口
+                        url = "http://192.168.3.48:5000/robot/send_msg"
+                        payload = json.dumps({
+                            "kafka_ip": "8.130.108.7:9092",
+                            "topic_name": "reminder",
+                            "message": {
+                                "type": "voice",
+                                "content": "您已久坐两小时，快起身跟我一起运动下吧！"
+                            }
+                        })
+                        headers = {
+                            'Content-Type': 'application/json'
+                        }
+                        response = requests.request("POST", url, headers=headers, data=payload)
+                        # print(response.text)
+                        # 3.调用视频播放接口
+                        url = "http://192.168.3.48:5000/robot/control"
+                        payload = json.dumps({
+                            "kafka_ip": "8.130.108.7:9092",
+                            "topic_name": "control",
+                            "command": "play_video"
+                        })
+                        headers = {
+                            'Content-Type': 'application/json'
+                        }
+                        response = requests.request("POST", url, headers=headers, data=payload)
+                        print(response.text)
+            # 非久坐处理
+            else:
+                # 清空久坐时长
+                if timespan < 120:
+                    print("清空久坐时长")
+                    cursor.execute("UPDATE sedentary_info SET timespan=? WHERE id=?",
+                                           (0, id))
+                    conn.commit()
+                if posture == 1:
+                    # 跌倒处理：语音播报
+                    # print("老人跌倒")
+                    # 机器人播报
+                    url = "http://192.168.3.48:5000/robot/send_msg"
+                    payload = json.dumps({
+                        "kafka_ip": "8.130.108.7:9092",
+                        "topic_name": "reminder",
+                        "message": {
+                            "type": "voice",
+                            "content": "检测到老人跌倒"
+                        }
+                    })
+                    headers = {
+                        'Content-Type': 'application/json'
                     }
-                })
-                headers = {
-                    'Content-Type': 'application/json'
-                }
-                response = requests.request("POST", url, headers=headers, data=payload)
-                print(response.text)
-                # 3.调用视频播放接口
-                url = "http://192.168.3.48:5000/robot/control"
-                payload = json.dumps({
-                    "kafka_ip": "8.130.108.7:9092",
-                    "topic_name": "control",
-                    "command": "play_video"
-                })
-                headers = {
-                    'Content-Type': 'application/json'
-                }
-                response = requests.request("POST", url, headers=headers, data=payload)
-                print(response.text)
-        else:
-            # 清空久坐时长
-            print("清空久坐时长")
-            cursor.execute("UPDATE sedentary_info SET timespan=? WHERE id=?",
-                                       (0, id))
-            conn.commit()
-            if posture == 1:
-                # 跌倒处理：语音播报
-                print("老人跌倒")
-                # 机器人播报
-                url = "http://192.168.3.48:5000/robot/send_msg"
-                payload = json.dumps({
-                    "kafka_ip": "8.130.108.7:9092",
-                    "topic_name": "reminder",
-                    "message": {
-                        "type": "voice",
-                        "content": "检测到老人跌倒"
-                    }
-                })
-                headers = {
-                    'Content-Type': 'application/json'
-                }
-                response = requests.request("POST", url, headers=headers, data=payload)
-                print(response.text)
-        return jsonify({'success': '请求成功'}), 200
+                    response = requests.request("POST", url, headers=headers, data=payload)
+                    print(response.text)
+        return jsonify({'success': '请求成功',
+                        'describe': describe,
+                        'posture': posture,
+                        'sittime': sittime}), 200
+    # 大模型调用失败
+    except json.JSONDecodeError as e:
+        return jsonify({'error': '请求处理出错：' + str(e)}), 500
     except sqlite3.Error as e:
         print(e)
         return jsonify({'error': '请求处理出错：' + str(e)}), 500
@@ -595,6 +643,8 @@ def posture_recognition():
         # 关闭连接
         if conn:
             conn.close()
+
+
 
 def run():
     server = pywsgi.WSGIServer(('0.0.0.0',5000), __app)
