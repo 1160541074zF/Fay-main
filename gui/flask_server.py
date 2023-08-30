@@ -19,7 +19,7 @@ from core import wsa_server
 from core import fay_core
 from core.content_db import Content_Db
 from robot import client
-from ai_module import yolov8, image_posture
+from ai_module import yolov8, image_posture, image_danger, image_emotion
 from datetime import datetime, timedelta
 
 __app = Flask(__name__)
@@ -484,8 +484,74 @@ def api_post_location():
 def home_get():
     return __get_template()
 
+# 危险识别接口
+@__app.route('/detection/danger',methods=['post'])
+def danger_detection():
+    try:
+        request_data = request.json
+        # 机器人拍照的图片
+        image = request_data.get("image")
+        # 图像识别大模型结果
+        response = image_danger.danger_detection(image)
+        # 大模型能够返回行为识别的结果
+        result_data = json.loads(response)
+        describe = result_data['result']
+        print(describe)
+        # 机器人播报危险检测的结果
+        # 调用语音播报接口
+        url = "http://192.168.3.48:5000/robot/send_msg"
+        payload = json.dumps({
+            "kafka_ip": "8.130.108.7:9092",
+            "topic_name": "reminder",
+            "message": {
+                "type": "voice",
+                "content": describe
+            }
+        })
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return jsonify({'success': '请求成功',
+                        'describe': describe}), 200
+    # 大模型调用失败
+    except json.JSONDecodeError as e:
+        return jsonify({'error': '请求处理出错：' + str(e)}), 500
+
+@__app.route('/recognition/emotion',methods=['post'])
+def emotion_recognition():
+    try:
+        request_data = request.json
+        # 机器人拍照的图片
+        image = request_data.get("image")
+        # 图像识别大模型结果
+        response = image_emotion.emotion_detection(image)
+        # 大模型能够返回行为识别的结果
+        result_data = json.loads(response)
+        describe = result_data['result']
+        # print(describe)
+        # 调用语音播报接口
+        url = "http://192.168.3.48:5000/robot/send_msg"
+        payload = json.dumps({
+            "kafka_ip": "8.130.108.7:9092",
+            "topic_name": "reminder",
+            "message": {
+                "type": "voice",
+                "content": describe
+            }
+        })
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return jsonify({'success': '请求成功',
+                        'describe': describe}), 200
+    # 大模型调用失败
+    except json.JSONDecodeError as e:
+        return jsonify({'error': '请求处理出错：' + str(e)}), 500
+
 # 行为识别接口：大模型识别结果、姿态结果、久坐时长
-@__app.route('/posture/recognition', methods=['post'])
+@__app.route('/recognition/posture', methods=['post'])
 def posture_recognition():
     try:
         # 图片 时间数据
@@ -643,8 +709,6 @@ def posture_recognition():
         # 关闭连接
         if conn:
             conn.close()
-
-
 
 def run():
     server = pywsgi.WSGIServer(('0.0.0.0',5000), __app)
