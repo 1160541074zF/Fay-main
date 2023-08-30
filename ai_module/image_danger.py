@@ -11,7 +11,7 @@ def danger_detection(image_base64):
         url = "https://Sdia-LLM-KG-yu74wtz23f8m.serv-c1.openbayes.net"
         data = {
             "image": image_base64,
-            "text": "判断图片中是否有危险因素",
+            "text": "假设你是机器人，请根据当前画面发现的危险，生成一条预警信息",
             "history": []
         }
         completion = requests.post(url, json=data)
