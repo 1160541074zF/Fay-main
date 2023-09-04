@@ -11,7 +11,7 @@ def image_to_base64(image_path):
 def sendEmotionPicture():
     image_path = "./emotion.png" #换成你自己的图片
     image_base64 = image_to_base64(image_path)
-    url = "http://192.168.3.48:5000/recognition/emotion"
+    url = "http://localhost:5000/recognition/emotion"
     data = {
     "image": image_base64
     }

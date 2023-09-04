@@ -530,6 +530,7 @@ def emotion_recognition():
         result_data = json.loads(response)
         describe = result_data['result']
         # print(describe)
+        util.log(1, describe)
         # 调用语音播报接口
         url = "http://192.168.3.48:5000/robot/send_msg"
         payload = json.dumps({
