@@ -501,7 +501,7 @@ def danger_detection():
         # 调用语音播报接口
         url = "http://192.168.3.48:5000/robot/send_msg"
         payload = json.dumps({
-            "kafka_ip": "8.130.108.7:9092",
+            "kafka_ip": "192.168.3.48:9092",
             "topic_name": "reminder",
             "message": {
                 "type": "voice",
@@ -533,7 +533,7 @@ def emotion_recognition():
         # 调用语音播报接口
         url = "http://192.168.3.48:5000/robot/send_msg"
         payload = json.dumps({
-            "kafka_ip": "8.130.108.7:9092",
+            "kafka_ip": "192.168.3.48:9092",
             "topic_name": "reminder",
             "message": {
                 "type": "voice",
@@ -643,7 +643,7 @@ def posture_recognition():
                         # 调用语音播报接口
                         url = "http://192.168.3.48:5000/robot/send_msg"
                         payload = json.dumps({
-                            "kafka_ip": "8.130.108.7:9092",
+                            "kafka_ip": "192.168.3.48:9092",
                             "topic_name": "reminder",
                             "message": {
                                 "type": "voice",
@@ -658,7 +658,7 @@ def posture_recognition():
                         # 3.调用视频播放接口
                         url = "http://192.168.3.48:5000/robot/control"
                         payload = json.dumps({
-                            "kafka_ip": "8.130.108.7:9092",
+                            "kafka_ip": "192.168.3.48:9092",
                             "topic_name": "control",
                             "command": "play_video"
                         })
@@ -681,7 +681,7 @@ def posture_recognition():
                     # 机器人播报
                     url = "http://192.168.3.48:5000/robot/send_msg"
                     payload = json.dumps({
-                        "kafka_ip": "8.130.108.7:9092",
+                        "kafka_ip": "192.168.3.48:9092",
                         "topic_name": "reminder",
                         "message": {
                             "type": "voice",
