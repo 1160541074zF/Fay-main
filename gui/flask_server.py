@@ -527,26 +527,10 @@ def emotion_recognition():
         # 图像识别大模型结果
         response = image_emotion.emotion_detection(image)
         # 大模型能够返回行为识别的结果
-        result_data = json.loads(response)
-        describe = result_data['result']
-        # print(describe)
-        util.log(1, describe)
-        # 调用语音播报接口
-        url = "http://192.168.3.48:5000/robot/send_msg"
-        payload = json.dumps({
-            "kafka_ip": "192.168.3.48:9092",
-            "topic_name": "reminder",
-            "message": {
-                "type": "voice",
-                "content": describe
-            }
-        })
-        headers = {
-            'Content-Type': 'application/json'
-        }
-        response = requests.request("POST", url, headers=headers, data=payload)
-        return jsonify({'success': '请求成功',
-                        'describe': describe}), 200
+        # result_data = json.loads(response)
+        # describe = result_data['result']
+
+        return jsonify({'success': '请求成功', 'describe': response}), 200
     # 大模型调用失败
     except json.JSONDecodeError as e:
         return jsonify({'error': '请求处理出错：' + str(e)}), 500

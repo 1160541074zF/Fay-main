@@ -19,4 +19,18 @@ def sendEmotionPicture():
     return response
 
 if __name__ == '__main__':
-    sendEmotionPicture()
+    a = sendEmotionPicture()
+    print(a)
+    # url = "http://192.168.3.48:5000/robot/send_msg"
+    # payload = json.dumps({
+    #     "kafka_ip": "192.168.3.48:9092",
+    #     "topic_name": "reminder",
+    #     "message": {
+    #         "type": "voice",
+    #         "content": "你好"
+    #     }
+    # })
+    # headers = {
+    #     'Content-Type': 'application/json'
+    # }
+    # response = requests.request("POST", url, headers=headers, data=payload)

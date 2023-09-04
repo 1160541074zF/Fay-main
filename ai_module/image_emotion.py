@@ -2,6 +2,9 @@ import base64
 import json
 import requests
 
+from utils import util
+
+
 def image_to_base64(image_path):
     with open(image_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode('utf-8')
@@ -16,7 +19,24 @@ def emotion_detection(image_base64):
         }
         completion = requests.post(url, json=data)
         response = completion.content.decode()
-        return response
+        result_data = json.loads(response)
+        describe = result_data['result']
+        util.log(1, describe)
+        # 调用语音播报接口
+        url = "http://192.168.3.48:5000/robot/send_msg"
+        payload = json.dumps({
+            "kafka_ip": "192.168.3.48:9092",
+            "topic_name": "reminder",
+            "message": {
+                "type": "voice",
+                "content": describe
+            }
+        })
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return response.text
     except Exception as e:
         return '情绪识别请求失败，请稍后重试' + str(e)
 #
