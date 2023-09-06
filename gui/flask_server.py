@@ -11,6 +11,11 @@ from flask_cors import CORS
 
 import fay_booter
 
+import os
+import cv2
+import numpy as np
+
+
 from core.tts_voice import EnumVoice
 from gevent import pywsgi
 from scheduler.thread_manager import MyThread
@@ -20,8 +25,8 @@ from core import fay_core
 from core.content_db import Content_Db
 from robot import client
 from ai_module import yolov8, image_posture, image_danger, image_emotion
-from datetime import datetime, timedelta
-
+from datetime import datetime
+from face_train_and_recognition_module.face_train_and_recognition_module import face_recognition,name,getImageAndLabels,save_base64_image
 __app = Flask(__name__)
 CORS(__app, supports_credentials=True)
 
@@ -483,6 +488,54 @@ def api_post_location():
 @__app.route('/', methods=['get'])
 def home_get():
     return __get_template()
+
+
+@__app.route('/recognition_face', methods=['POST'])
+def detect_face():
+    try:
+        # 获取 POST 请求中的 base64 编码图片数据
+        image_data = request.json['image_data']
+
+        name()
+
+        # 进行人脸检测
+        result_image,result_name= face_recognition(image_data)
+
+        # 将结果图片转换为 base64 编码
+        retval, buffer = cv2.imencode('.jpg', result_image)
+        result_image_base64 = base64.b64encode(buffer).decode('utf-8')
+
+        # 返回结果
+        return jsonify({'result_image': result_image_base64,'result_name':result_name})
+    except Exception as e:
+        return jsonify({'error': 'An error occurred: {}'.format(str(e))})
+
+@__app.route('/save_image_and_train', methods=['POST'])
+def save_image():
+    try:
+        # 获取 POST 请求中的 base64 图片数据和原始文件名
+        data = request.get_json()
+        image_data = data['image_data']
+        original_filename = data['filename']
+
+        # 图片保存路径，保持文件名与原图片名字一致
+        image_save_path = os.path.join('../face_train_and_recognition/data/jm/', original_filename)
+
+        # 保存图片到指定路径
+        save_base64_image(image_data, image_save_path)
+
+        # 在保存图片后，调用getImageAndLabels方法进行人脸识别的训练
+        path = '../face_train_and_recognition/data/jm/'
+        faces, ids = getImageAndLabels(path)
+        recognizer = cv2.face.LBPHFaceRecognizer_create()
+        recognizer.train(faces, np.array(ids))
+        recognizer.write('../face_train_and_recognition/trainer/trainer.yml')
+
+        return jsonify({'message': '图片保存成功，人脸识别训练完成。'})
+
+    except Exception as e:
+        return jsonify({'error': 'An error occurred: {}'.format(str(e))})
+
 
 # 危险识别接口
 @__app.route('/detection/danger',methods=['post'])
