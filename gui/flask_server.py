@@ -551,6 +551,8 @@ def danger_detection():
         describe = result_data['result']
         print(describe)
         # 机器人播报危险检测的结果
+        if '火' not in describe and '玻璃' not in describe:
+            describe = "当前环境一切正常，无危险情况"
         # 调用语音播报接口
         url = "http://192.168.3.48:5000/robot/send_msg"
         payload = json.dumps({
@@ -569,6 +571,8 @@ def danger_detection():
                         'describe': describe}), 200
     # 大模型调用失败
     except json.JSONDecodeError as e:
+        return jsonify({'error': '请求处理出错：' + str(e)}), 500
+    except Exception as e:
         return jsonify({'error': '请求处理出错：' + str(e)}), 500
 
 @__app.route('/recognition/emotion',methods=['post'])
@@ -601,6 +605,8 @@ def emotion_recognition():
                         'describe': describe}), 200
     # 大模型调用失败
     except json.JSONDecodeError as e:
+        return jsonify({'error': '请求处理出错：' + str(e)}), 500
+    except Exception as e:
         return jsonify({'error': '请求处理出错：' + str(e)}), 500
 
 # 行为识别接口：大模型识别结果、姿态结果、久坐时长
@@ -646,7 +652,6 @@ def posture_recognition():
         # print(f"姿态识别结果:{posture}")
         # print(f"久坐时长:{timespan}")
         # print(f"上次姿态:{posture_last}")
-
         date_format = "%Y-%m-%d %H:%M:%S"
         # 上次久坐数据的日期、当前照片久坐时间的日期
         date1 = datetime.strptime(date_time, date_format)
@@ -692,7 +697,7 @@ def posture_recognition():
                     conn.commit()
                     # 2.判断是否久坐
                     if new_timespan >= 120:
-                        # print("老人久坐")
+                        print("老人久坐")
                         # 调用语音播报接口
                         url = "http://192.168.3.48:5000/robot/send_msg"
                         payload = json.dumps({
@@ -707,7 +712,7 @@ def posture_recognition():
                             'Content-Type': 'application/json'
                         }
                         response = requests.request("POST", url, headers=headers, data=payload)
-                        # print(response.text)
+                        print(response.text)
                         # 3.调用视频播放接口
                         url = "http://192.168.3.48:5000/robot/control"
                         payload = json.dumps({
@@ -730,7 +735,7 @@ def posture_recognition():
                     conn.commit()
                 if posture == 1:
                     # 跌倒处理：语音播报
-                    # print("老人跌倒")
+                    print("老人跌倒")
                     # 机器人播报
                     url = "http://192.168.3.48:5000/robot/send_msg"
                     payload = json.dumps({
