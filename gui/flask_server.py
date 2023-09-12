@@ -188,7 +188,7 @@ def receive_message(message):
 def robot_control():
     kafka_ip = "192.168.3.48:9092"
     topic_name = "control"
-    message = "play_voice"
+    message = "play_video"
     # Process to send message
     client.send_sport_robot(kafka_ip, topic_name, message)
 
@@ -705,7 +705,7 @@ def posture_recognition():
                     # 跌倒处理：语音播报
                     print("老人跌倒")
                     # 机器人播报
-                    receive_message("老人跌倒，请立刻进行救助！")
+                    receive_message("老人跌倒")
         return jsonify({'success': '请求成功',
                         'describe': describe,
                         'posture': posture,
