@@ -2,6 +2,7 @@ import base64
 # import imp
 import json
 import sqlite3
+import threading
 import time
 import requests
 
@@ -149,30 +150,47 @@ def receive_data():
 #         return jsonify({"status": "error", "message": str(e)})
 
 
-@__app.route("/robot/send_msg", methods=["POST"])
-def receive_message():
-    payload = request.json
-    kafka_ip = payload["kafka_ip"]
-    topic_name = payload["topic_name"]
-    message = payload["message"]
+# @__app.route("/robot/send_msg", methods=["POST"])
+# def receive_message():
+#     payload = request.json
+#     kafka_ip = payload["kafka_ip"]
+#     topic_name = payload["topic_name"]
+#     message = payload["message"]
+#
+#     # Process to send message
+#     client.send_message_to_kafka(kafka_ip, topic_name, message)
+#     response = {'message': 'send successfully'}
+#     return jsonify(response), 200  # 返回响应和状态码
 
-    # Process to send message
+# 语音播报
+def receive_message(message):
+    kafka_ip = "192.168.3.48:9092"
+    topic_name = "reminder"
+    message = {
+        "type": "voice",
+        "content": message
+    }
+    print(message)
     client.send_message_to_kafka(kafka_ip, topic_name, message)
-    response = {'message': 'send successfully'}
-    return jsonify(response), 200  # 返回响应和状态码
 
+# @__app.route("/robot/control", methods=["POST"])
+# def robot_control():
+#     payload = request.json
+#     kafka_ip = payload["kafka_ip"]
+#     topic_name = payload["topic_name"]
+#     message = payload["command"]
+#     # Process to send message
+#     client.send_sport_robot(kafka_ip, topic_name, message)
+#     response = {'message': 'send successfully'}
+#     return jsonify(response), 200  # 返回响应和状态码
 
-@__app.route("/robot/control", methods=["POST"])
+# 播放视频
 def robot_control():
-    payload = request.json
-    kafka_ip = payload["kafka_ip"]
-    topic_name = payload["topic_name"]
-    message = payload["command"]
-
+    kafka_ip = "192.168.3.48:9092"
+    topic_name = "control"
+    message = "play_voice"
     # Process to send message
     client.send_sport_robot(kafka_ip, topic_name, message)
-    response = {'message': 'send successfully'}
-    return jsonify(response), 200  # 返回响应和状态码
 
 
 @__app.route('/api/submit', methods=['post'])
@@ -536,7 +554,6 @@ def save_image():
     except Exception as e:
         return jsonify({'error': 'An error occurred: {}'.format(str(e))})
 
-
 # 危险识别接口
 @__app.route('/detection/danger',methods=['post'])
 def danger_detection():
@@ -553,20 +570,7 @@ def danger_detection():
         # 机器人播报危险检测的结果
         if '火' not in describe and '玻璃' not in describe:
             describe = "当前环境一切正常，无危险情况"
-        # 调用语音播报接口
-        url = "http://192.168.3.48:5000/robot/send_msg"
-        payload = json.dumps({
-            "kafka_ip": "192.168.3.48:9092",
-            "topic_name": "reminder",
-            "message": {
-                "type": "voice",
-                "content": describe
-            }
-        })
-        headers = {
-            'Content-Type': 'application/json'
-        }
-        response = requests.request("POST", url, headers=headers, data=payload)
+        receive_message(describe)
         return jsonify({'success': '请求成功',
                         'describe': describe}), 200
     # 大模型调用失败
@@ -586,21 +590,7 @@ def emotion_recognition():
         # 大模型能够返回行为识别的结果
         result_data = json.loads(response)
         describe = result_data['result']
-        # print(describe)
-        # 调用语音播报接口
-        url = "http://192.168.3.48:5000/robot/send_msg"
-        payload = json.dumps({
-            "kafka_ip": "192.168.3.48:9092",
-            "topic_name": "reminder",
-            "message": {
-                "type": "voice",
-                "content": describe
-            }
-        })
-        headers = {
-            'Content-Type': 'application/json'
-        }
-        response = requests.request("POST", url, headers=headers, data=payload)
+        receive_message(describe)
         return jsonify({'success': '请求成功',
                         'describe': describe}), 200
     # 大模型调用失败
@@ -698,33 +688,11 @@ def posture_recognition():
                     # 2.判断是否久坐
                     if new_timespan >= 120:
                         print("老人久坐")
+                        message = "您已久坐两小时，快起身跟我一起运动下吧！"
                         # 调用语音播报接口
-                        url = "http://192.168.3.48:5000/robot/send_msg"
-                        payload = json.dumps({
-                            "kafka_ip": "192.168.3.48:9092",
-                            "topic_name": "reminder",
-                            "message": {
-                                "type": "voice",
-                                "content": "您已久坐两小时，快起身跟我一起运动下吧！"
-                            }
-                        })
-                        headers = {
-                            'Content-Type': 'application/json'
-                        }
-                        response = requests.request("POST", url, headers=headers, data=payload)
-                        print(response.text)
+                        receive_message(message)
                         # 3.调用视频播放接口
-                        url = "http://192.168.3.48:5000/robot/control"
-                        payload = json.dumps({
-                            "kafka_ip": "192.168.3.48:9092",
-                            "topic_name": "control",
-                            "command": "play_video"
-                        })
-                        headers = {
-                            'Content-Type': 'application/json'
-                        }
-                        response = requests.request("POST", url, headers=headers, data=payload)
-                        print(response.text)
+                        robot_control()
             # 非久坐处理
             else:
                 # 清空久坐时长
@@ -737,20 +705,7 @@ def posture_recognition():
                     # 跌倒处理：语音播报
                     print("老人跌倒")
                     # 机器人播报
-                    url = "http://192.168.3.48:5000/robot/send_msg"
-                    payload = json.dumps({
-                        "kafka_ip": "8.130.108.7:9092",
-                        "topic_name": "reminder",
-                        "message": {
-                            "type": "voice",
-                            "content": "检测到老人跌倒"
-                        }
-                    })
-                    headers = {
-                        'Content-Type': 'application/json'
-                    }
-                    response = requests.request("POST", url, headers=headers, data=payload)
-                    print(response.text)
+                    receive_message("老人跌倒，请立刻进行救助！")
         return jsonify({'success': '请求成功',
                         'describe': describe,
                         'posture': posture,
@@ -772,9 +727,10 @@ def run():
     server = pywsgi.WSGIServer(('0.0.0.0',5000), __app)
     server.serve_forever()
 
-
 def start():
-    MyThread(target=run).start()
+    # MyThread(target=run).start()
+    thread = threading.Thread(target=run)
+    thread.start()
 
 if __name__ == '__main__':
     __app.run()
