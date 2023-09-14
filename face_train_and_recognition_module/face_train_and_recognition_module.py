@@ -13,6 +13,7 @@ app = Flask(__name__)
 names=[]
 warningtime = 0
 
+# 人脸识别
 def face_recognition(image_data):
     recognizer = cv2.face.LBPHFaceRecognizer_create()
     recognizer.read('../face_train_and_recognition/trainer/trainer.yml')
@@ -39,7 +40,7 @@ def face_recognition(image_data):
             cv2.putText(img, 'unkonw', (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 1)
         else:
             cv2.putText(img, name, (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 1)
-    return img,name
+    return img,name,ids
 
 
 def name():
@@ -87,3 +88,12 @@ def getImageAndLabels(path):
 def save_base64_image(image_data, save_path):
     with open(save_path, 'wb') as image_file:
         image_file.write(base64.b64decode(image_data))
+
+# 传入要保存的路径。返回传入文件夹路径下所有的文件个数+1
+def get_next_number(save_folder):
+    # 获取当前目录中 jpg 图片的个数
+    jpg_files = [f for f in os.listdir(save_folder) if f.endswith('.jpg')]
+    count = len(jpg_files)
+
+    # 返回新的文件名
+    return count + 1

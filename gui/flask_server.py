@@ -18,6 +18,7 @@ import numpy as np
 
 from core.tts_voice import EnumVoice
 from gevent import pywsgi
+
 from scheduler.thread_manager import MyThread
 from utils import config_util, util
 from core import wsa_server
@@ -26,7 +27,9 @@ from core.content_db import Content_Db
 from robot import client
 from ai_module import yolov8, image_posture, image_danger, image_emotion
 from datetime import datetime
-from face_train_and_recognition_module.face_train_and_recognition_module import face_recognition,name,getImageAndLabels,save_base64_image
+from face_train_and_recognition_module.face_train_and_recognition_module import face_recognition, name, \
+    getImageAndLabels, save_base64_image, get_next_number
+
 __app = Flask(__name__)
 CORS(__app, supports_credentials=True)
 
@@ -499,14 +502,14 @@ def detect_face():
         name()
 
         # 进行人脸检测
-        result_image,result_name= face_recognition(image_data)
+        result_image,result_name,result_id= face_recognition(image_data)
 
         # 将结果图片转换为 base64 编码
         retval, buffer = cv2.imencode('.jpg', result_image)
         result_image_base64 = base64.b64encode(buffer).decode('utf-8')
 
         # 返回结果
-        return jsonify({'result_image': result_image_base64,'result_name':result_name})
+        return jsonify({'result_image': result_image_base64,'result_name':result_name,'result_id':result_id})
     except Exception as e:
         return jsonify({'error': 'An error occurred: {}'.format(str(e))})
 
@@ -518,8 +521,13 @@ def save_image():
         image_data = data['image_data']
         original_filename = data['filename']
 
+        # 获取图片的保存路径和文件名
+        save_folder = '../face_train_and_recognition/data/jm/'
+        number = get_next_number(save_folder)
+        image_save_filename = f"{number}.{original_filename}.jpg"
+
         # 图片保存路径，保持文件名与原图片名字一致
-        image_save_path = os.path.join('../face_train_and_recognition/data/jm/', original_filename)
+        image_save_path = os.path.join('../face_train_and_recognition/data/jm/', image_save_filename)
 
         # 保存图片到指定路径
         save_base64_image(image_data, image_save_path)
@@ -531,7 +539,7 @@ def save_image():
         recognizer.train(faces, np.array(ids))
         recognizer.write('../face_train_and_recognition/trainer/trainer.yml')
 
-        return jsonify({'message': '图片保存成功，人脸识别训练完成。'})
+        return jsonify({'message': f"图片保存成功，人脸识别训练完成,id:{number},姓名:{original_filename}"})
 
     except Exception as e:
         return jsonify({'error': 'An error occurred: {}'.format(str(e))})
