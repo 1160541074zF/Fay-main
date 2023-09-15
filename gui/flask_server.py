@@ -54,7 +54,7 @@ def __get_device_list():
 @__app.route('/api/get-medicine', methods=['POST'])
 def receive_data():
     try:
-        # 从请求中获取JSON数据
+        # 从请求中获取中JSON数据
         data = request.get_json()
         print(data)
         # 检查是否包含所需的键
@@ -153,20 +153,20 @@ def receive_data():
 #         return jsonify({"status": "error", "message": str(e)})
 
 
-# @__app.route("/robot/send_msg", methods=["POST"])
-# def receive_message():
-#     payload = request.json
-#     kafka_ip = payload["kafka_ip"]
-#     topic_name = payload["topic_name"]
-#     message = payload["message"]
-#
-#     # Process to send message
-#     client.send_message_to_kafka(kafka_ip, topic_name, message)
-#     response = {'message': 'send successfully'}
-#     return jsonify(response), 200  # 返回响应和状态码
+@__app.route("/robot/send_msg", methods=["POST"])
+def receive_message():
+    payload = request.json
+    kafka_ip = payload["kafka_ip"]
+    topic_name = payload["topic_name"]
+    message = payload["message"]
+
+    # Process to send message
+    client.send_message_to_kafka(kafka_ip, topic_name, message)
+    response = {'message': 'send successfully'}
+    return jsonify(response), 200  # 返回响应和状态码
 
 # 语音播报
-def receive_message(message):
+def receive_message_method(message):
     kafka_ip = "192.168.3.48:9092"
     topic_name = "reminder"
     message = {
@@ -176,25 +176,24 @@ def receive_message(message):
     print(message)
     client.send_message_to_kafka(kafka_ip, topic_name, message)
 
-# @__app.route("/robot/control", methods=["POST"])
-# def robot_control():
-#     payload = request.json
-#     kafka_ip = payload["kafka_ip"]
-#     topic_name = payload["topic_name"]
-#     message = payload["command"]
-#     # Process to send message
-#     client.send_sport_robot(kafka_ip, topic_name, message)
-#     response = {'message': 'send successfully'}
-#     return jsonify(response), 200  # 返回响应和状态码
+@__app.route("/robot/control", methods=["POST"])
+def robot_control():
+    payload = request.json
+    kafka_ip = payload["kafka_ip"]
+    topic_name = payload["topic_name"]
+    message = payload["command"]
+    # Process to send message
+    client.send_sport_robot(kafka_ip, topic_name, message)
+    response = {'message': 'send successfully'}
+    return jsonify(response), 200  # 返回响应和状态码
 
 # 播放视频
-def robot_control():
+def robot_control_method():
     kafka_ip = "192.168.3.48:9092"
     topic_name = "control"
     message = "play_video"
     # Process to send message
     client.send_sport_robot(kafka_ip, topic_name, message)
-
 
 @__app.route('/api/submit', methods=['post'])
 def api_submit():
@@ -297,38 +296,38 @@ def get_robot_data():
 # conn.commit()
 
 
-@__app.route('/save-user-info', methods=['POST'])
-def save_user_info():
-    try:
-        if request.method == 'POST':
-            user_info = request.json  # 假设前端将数据以JSON格式发送
-            print(user_info)
-            user_name = user_info.get('user_name')
-            user_gender = user_info.get('user_gender')
-            user_age = user_info.get('user_age')
-            user_type = user_info.get('user_type')
-
-            # 设置SQLite数据库连接
-            conn = sqlite3.connect('fay.db')
-            print(conn)
-            cursor = conn.cursor()
-            print(cursor)
-
-            # 插入数据到数据库
-            cursor.execute('''INSERT INTO user_inform (user_name, user_gender, user_age, user_type)
-                              VALUES (?, ?, ?, ?)''', (user_name, user_gender, user_age, user_type))
-            conn.commit()
-            cursor.close()
-            conn.close()
-            return 'User information saved successfully.'
-    except sqlite3.Error as e:
-        print(e)
-        return 'An error occurred while saving user information.'
-    except Exception as e:
-        print(e)
-        return 'An error occurred while saving user information.'
-
-    return 'User information saved successfully.'
+# @__app.route('/save-user-info', methods=['POST'])
+# def save_user_info():
+#     try:
+#         if request.method == 'POST':
+#             user_info = request.json  # 假设前端将数据以JSON格式发送
+#             print(user_info)
+#             user_name = user_info.get('user_name')
+#             user_gender = user_info.get('user_gender')
+#             user_age = user_info.get('user_age')
+#             user_type = user_info.get('user_type')
+#
+#             # 设置SQLite数据库连接
+#             conn = sqlite3.connect('fay.db')
+#             print(conn)
+#             cursor = conn.cursor()
+#             print(cursor)
+#
+#             # 插入数据到数据库
+#             cursor.execute('''INSERT INTO user_inform (user_name, user_gender, user_age, user_type)
+#                               VALUES (?, ?, ?, ?)''', (user_name, user_gender, user_age, user_type))
+#             conn.commit()
+#             cursor.close()
+#             conn.close()
+#             return 'User information saved successfully.'
+#     except sqlite3.Error as e:
+#         print(e)
+#         return 'An error occurred while saving user information.'
+#     except Exception as e:
+#         print(e)
+#         return 'An error occurred while saving user information.'
+#
+#     return 'User information saved successfully.'
 
 
 @__app.route('/save-medicine-info', methods=['POST'])
@@ -511,6 +510,408 @@ def home_get():
     return __get_template()
 
 
+# 读用户信息
+@__app.route('/read-user-info', methods=['GET'])
+def read_user_inform():
+    # try:
+        conn = sqlite3.connect('Ecarebot.db')
+        cursor = conn.cursor()
+
+        query = '''SELECT id, user_name, user_gender, user_age, user_type, user_birth FROM user_inform'''
+        cursor.execute(query, ())
+        user_info = cursor.fetchall()
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        list = [
+            {
+                'id': row[0],
+                'name': row[1],
+                'sexLabel': row[2],
+                'age': row[3],
+                'typeLabel': row[4],
+                'birth': row[5]
+            }
+            for row in user_info
+        ]
+        print(list)
+        return jsonify({"status": "success", "user_info": list})
+
+    # except Exception as e:
+    #     return jsonify({"status": "error", "message": "读取用户信息失败", "error": str(e)})
+
+# 保存用户信息
+@__app.route('/save-user-info', methods=['POST'])
+def save_user_info():
+    try:
+        if request.method == 'POST':
+            user_info = request.json
+            print(user_info)
+            user_name = user_info.get('name')
+            user_gender = user_info.get('sexLabel')
+            user_age = user_info.get('age')
+            user_type = user_info.get('typeLabel')
+            user_birth = user_info.get('birth')
+            picture_url = user_info.get('image')
+            # 设置SQLite数据库连接
+            conn = sqlite3.connect('Ecarebot.db')
+            print(conn)
+            cursor = conn.cursor()
+            print(cursor)
+            # 插入数据到数据库
+            cursor.execute('''INSERT INTO user_inform (user_name, user_gender, user_age, user_type, user_birth, picture_url)
+                              VALUES (?, ?, ?, ?, ?, ?)''', (user_name, user_gender, user_age, user_type, user_birth, picture_url))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return 'User information saved successfully.'
+    except sqlite3.Error as e:
+        print(e)
+        return 'An error occurred while saving user information.'
+    except Exception as e:
+        print(e)
+        return 'An error occurred while saving user information.'
+
+    return 'User information saved successfully.'
+
+# 修改用户信息
+@__app.route('/update-user-info', methods=['POST'])
+def update_user_info():
+    try:
+        if request.method == 'POST':
+            user_info = request.json
+            print(user_info)
+            id = int(user_info.get('id'))
+            user_name = user_info.get('name')
+            user_gender = user_info.get('sexLabel')
+            user_age = user_info.get('age')
+            user_type = user_info.get('typeLabel')
+            picture_url = user_info.get('image')
+
+            # 设置SQLite数据库连接
+            conn = sqlite3.connect('Ecarebot.db')
+            cursor = conn.cursor()
+
+            # 使用用户ID更新数据库中的数据
+            cursor.execute('''UPDATE user_inform
+                              SET user_name = ?, user_gender = ?, user_age = ?, user_type = ?, picture_url = ?
+                              WHERE id = ?''', (user_name, user_gender, user_age, user_type, picture_url, id))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return 'User information updated successfully.'
+    except sqlite3.Error as e:
+        print(e)
+        return 'An error occurred while updating user information.'
+    except Exception as e:
+        print(e)
+        return 'An error occurred while updating user information.'
+
+    return 'User information updated successfully.'
+
+# 删除用户信息
+@__app.route('/delete-user-info/<int:user_id>', methods=['DELETE'])
+def delete_user_info(user_id):
+    # try:
+        if request.method == 'DELETE':
+            # 设置SQLite数据库连接
+            conn = sqlite3.connect('Ecarebot.db')
+            cursor = conn.cursor()
+
+            # 检查是否存在要删除的用户信息
+            cursor.execute("SELECT * FROM user_inform WHERE id=?", (user_id,))
+            user_data = cursor.fetchone()
+
+            if user_data:
+                # 执行删除操作
+                cursor.execute("DELETE FROM user_inform WHERE id=?", (user_id,))
+                conn.commit()
+                conn.close()
+                return 'User information deleted successfully.'
+            else:
+                conn.close()
+                return 'User information not found.'
+
+    # except sqlite3.Error as e:
+    #     print(e)
+    #     return 'An error occurred while deleting user information.'
+    # except Exception as e:
+    #     print(e)
+    #     return 'An error occurred while deleting user information.'
+
+        return 'User information deleted successfully.'
+
+# 读用药信息
+@__app.route('/read-med-info', methods=['GET'])
+def read_med_inform():
+    try:
+        conn = sqlite3.connect('Ecarebot.db')
+        cursor = conn.cursor()
+
+        query = 'SELECT id, med_name, med_spec, med_usage, med_freq, med_dosage, time, med_num, user_name FROM med_inform'
+        cursor.execute(query, ())
+        med_info = cursor.fetchall()
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        list = [
+            {
+                'id': row[0],
+                'medname': row[1],
+                'spec': row[2],
+                'usage': row[3],
+                'freq': row[4],
+                'dosage': row[5],
+                'time': row[6],
+                'num': row[7],
+                'name': row[8]
+            }
+            for row in med_info
+        ]
+        print(list)
+        return jsonify({"status": "success", "med_info": list})
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": "读取用药信息失败", "error": str(e)})
+
+# 修改用药信息
+@__app.route('/update-med-info', methods=['POST'])
+def update_med_info():
+    try:
+        data = request.get_json()
+        id = data.get('id')
+        med_name = data.get('medname')
+        med_spec = data.get('spec')
+        med_usage = data.get('usage')
+        med_freq = data.get('freq')
+        med_dosage = data.get('med_dosage')
+        med_time = data.get('time')
+        med_num = data.get('num')
+        user_name = data.get('name')
+
+        conn = sqlite3.connect('Ecarebot.db')
+        cursor = conn.cursor()
+
+        query = 'UPDATE med_inform SET med_name=?, med_spec=?, med_usage=?, med_freq=?, med_dosage=?, time=?, med_num=?, user_name=? WHERE id=?'
+        cursor.execute(query, (med_name, med_spec, med_usage, med_freq, med_dosage, med_time, med_num, user_name, id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({"status": "success", "message": "用药信息更新成功"})
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": "更新用药信息失败", "error": str(e)})
+
+# 保存用药信息
+@__app.route('/save-med-info', methods=['POST'])
+def save_med_info():
+    # try:
+        # 从请求中获取JSON数据
+        data = request.get_json()
+        print(data)
+        # 检查是否包含所需的键
+        if all(key in data for key in ['name', 'medname', 'spec', 'usage', 'freq', 'dosage', 'time', 'num']):
+            med_name = data['medname']
+            print(med_name)
+            med_spec = data['spec']
+            print(med_spec)
+            med_usage = data['usage']
+            med_freq = data['freq']
+            med_dosage = data['dosage']
+            time = data['time']
+            med_num = data['num']
+            user_name = data['name']
+
+            # 在这里进行数据处理或数据库操作
+            # 设置SQLite数据库连接
+            conn = sqlite3.connect('Ecarebot.db')
+            print(conn)
+            cursor = conn.cursor()
+            print(cursor)
+
+            # 插入数据到数据库
+            cursor.execute('''INSERT INTO med_inform (med_name, med_spec, med_usage, med_freq, med_dosage, time, med_num, user_name)
+                                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                           (med_name, med_spec, med_usage, med_freq, med_dosage, time, med_num, user_name))
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            response = {
+                "status": "success",
+                "message": "成功接收并处理数据",
+            }
+        else:
+            response = {
+                "status": "error",
+                "message": "数据格式不正确，请提供所有必需的键名：med_name、med_spec、med_usage、med_freq、med_dosage、med_num"
+            }
+
+        return jsonify(response)
+
+    # except Exception as e:
+    #     return jsonify({"status": "error", "message": str(e)})
+
+# 删除用药信息
+@__app.route('/delete-med-info/<int:med_id>', methods=['DELETE'])
+def delete_med_info(med_id):
+    try:
+        if request.method == 'DELETE':
+            # 设置SQLite数据库连接
+            conn = sqlite3.connect('Ecarebot.db')
+            cursor = conn.cursor()
+
+            # 检查是否存在要删除的用药信息
+            cursor.execute("SELECT * FROM med_inform WHERE id=?", (med_id,))
+            med_data = cursor.fetchone()
+
+            if med_data:
+                # 执行删除操作
+                cursor.execute("DELETE FROM med_inform WHERE id=?", (med_id,))
+                conn.commit()
+                conn.close()
+                return 'Medication information deleted successfully.'
+            else:
+                conn.close()
+                return 'Medication information not found.'
+
+    except sqlite3.Error as e:
+        print(e)
+        return 'An error occurred while deleting medication information.'
+    except Exception as e:
+        print(e)
+        return 'An error occurred while deleting medication information.'
+
+    return 'Medication information deleted successfully.'
+
+
+# 读健康状态
+@__app.route('/read-state-info', methods=['GET'])
+def read_state_inform():
+    try:
+        conn = sqlite3.connect('Ecarebot.db')
+        cursor = conn.cursor()
+
+        query = 'SELECT id, user_name, sit_time FROM user_state'
+        cursor.execute(query, ())
+        user_state = cursor.fetchall()
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        list = [
+            {
+                'id': row[0],
+                'name': row[1],
+                'sit_time': row[2],
+            }
+            for row in user_state
+        ]
+        print(list)
+        return jsonify({"status": "success", "user_state": list})
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": "读取用户信息失败", "error": str(e)})
+
+# 保存健康状态
+@__app.route('/save-state-info', methods=['POST'])
+def save_state_info():
+    try:
+        if request.method == 'POST':
+            state_info = request.json  # Assuming the frontend sends data in JSON format
+            print(state_info)
+            user_id = state_info.get('id')
+            user_name = state_info.get('name')
+            sit_time = state_info.get('sit_time')
+
+            # Connect to the SQLite database
+            conn = sqlite3.connect('Ecarebot.db')
+            cursor = conn.cursor()
+
+            # Insert data into the database
+            cursor.execute('''INSERT INTO user_state (id, user_name, sit_time)
+                              VALUES (?, ?, ?)''', (user_id, user_name, sit_time))
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            return 'User state information saved successfully.'
+    except sqlite3.Error as e:
+        print(e)
+        return 'An error occurred while saving user state information.'
+    except Exception as e:
+        print(e)
+        return 'An error occurred while saving user state information.'
+
+    return 'User state information saved successfully.'
+
+# 修改健康状态
+@__app.route('/update-state-info', methods=['POST'])
+def update_state_info():
+    try:
+        if request.method == 'POST':
+            state_info = request.json
+            print(state_info)
+            user_id = state_info.get('id')
+            sit_time = state_info.get('sit_time')
+            name = state_info.get('name')
+            # Connect to the SQLite database
+            conn = sqlite3.connect('Ecarebot.db')
+            cursor = conn.cursor()
+
+            # Update data in the database
+            cursor.execute('''UPDATE user_state
+                              SET sit_time = ?, user_name = ?
+                              WHERE id = ?''', (sit_time, name, user_id))
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            return 'User state information updated successfully.'
+    except sqlite3.Error as e:
+        print(e)
+        return 'An error occurred while updating user state information.'
+    except Exception as e:
+        print(e)
+        return 'An error occurred while updating user state information.'
+
+    return 'User state information updated successfully.'
+
+# 删除健康状态
+@__app.route('/delete-state-info/<int:id>', methods=['DELETE'])
+def delete_state_info(id):
+    try:
+        if request.method == 'DELETE':
+            # Connect to the SQLite database
+            conn = sqlite3.connect('Ecarebot.db')
+            cursor = conn.cursor()
+
+            # Check if the user state information exists
+            cursor.execute("SELECT * FROM user_state WHERE id=?", (id,))
+            user_state_data = cursor.fetchone()
+
+            if user_state_data:
+                # Execute the delete operation
+                cursor.execute("DELETE FROM user_state WHERE id=?", (id,))
+                conn.commit()
+                conn.close()
+                return 'User state information deleted successfully.'
+            else:
+                conn.close()
+                return 'User state information not found.'
+
+    except sqlite3.Error as e:
+        print(e)
+        return 'An error occurred while deleting user state information.'
+    except Exception as e:
+        print(e)
+        return 'An error occurred while deleting user state information.'
+
+    return 'User state information deleted successfully.'
+
 @__app.route('/recognition_face', methods=['POST'])
 def detect_face():
     try:
@@ -578,7 +979,7 @@ def danger_detection():
         # 机器人播报危险检测的结果
         if '火' not in describe and '玻璃' not in describe:
             describe = "当前环境一切正常，无危险情况"
-        receive_message(describe)
+        receive_message_method(describe)
         return jsonify({'success': '请求成功',
                         'describe': describe}), 200
     # 大模型调用失败
@@ -598,7 +999,7 @@ def emotion_recognition():
         # 大模型能够返回行为识别的结果
         result_data = json.loads(response)
         describe = result_data['result']
-        receive_message(describe)
+        receive_message_method(describe)
         return jsonify({'success': '请求成功',
                         'describe': describe}), 200
     # 大模型调用失败
@@ -698,9 +1099,9 @@ def posture_recognition():
                         print("老人久坐")
                         message = "您已久坐两小时，快起身跟我一起运动下吧！"
                         # 调用语音播报接口
-                        receive_message(message)
+                        receive_message_method(message)
                         # 3.调用视频播放接口
-                        robot_control()
+                        robot_control_method()
             # 非久坐处理
             else:
                 # 清空久坐时长
@@ -713,7 +1114,7 @@ def posture_recognition():
                     # 跌倒处理：语音播报
                     print("老人跌倒")
                     # 机器人播报
-                    receive_message("老人跌倒")
+                    receive_message_method("老人跌倒")
         return jsonify({'success': '请求成功',
                         'describe': describe,
                         'posture': posture,
