@@ -10,13 +10,20 @@ import numpy as np
 app = Flask(__name__)
 
 
-names=[]
 warningtime = 0
 
 # 人脸识别
 def face_recognition(image_data):
     recognizer = cv2.face.LBPHFaceRecognizer_create()
     recognizer.read('../face_train_and_recognition/trainer/trainer.yml')
+
+    # 把目录下的图片名字存入到一个数组中
+    names = []
+    path = '../face_train_and_recognition/data/jm'
+    imagePaths = [os.path.join(path, f) for f in os.listdir(path)]
+    for imagePath in imagePaths:
+        name = str(os.path.split(imagePath)[1].split('.', 2)[1])
+        names.append(name)
 
     # 将 base64 编码的图片数据解码为图像
     image_data = base64.b64decode(image_data)
@@ -43,12 +50,12 @@ def face_recognition(image_data):
     return img,name,ids
 
 
-def name():
-    path = '../face_train_and_recognition/data/jm'
-    imagePaths=[os.path.join(path,f) for f in os.listdir(path)]
-    for imagePath in imagePaths:
-       name = str(os.path.split(imagePath)[1].split('.',2)[1])
-       names.append(name)
+# def name():
+#     path = '../face_train_and_recognition/data/jm'
+#     imagePaths=[os.path.join(path,f) for f in os.listdir(path)]
+#     for imagePath in imagePaths:
+#        name = str(os.path.split(imagePath)[1].split('.',2)[1])
+#        names.append(name)
 
 
 def getImageAndLabels(path):
