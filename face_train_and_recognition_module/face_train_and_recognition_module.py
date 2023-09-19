@@ -42,10 +42,12 @@ def face_recognition(image_data):
 
         # 人脸识别
         ids, confidence = recognizer.predict(gray[y:y + h, x:x + w])
-        name = str(names[ids - 1])
-        if confidence > 80:
+        if confidence > 60:
+            name = 'null'
+            ids = 0
             cv2.putText(img, 'unkonw', (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 1)
         else:
+            name = str(names[ids - 1])
             cv2.putText(img, name, (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 1)
     return img,name,ids
 

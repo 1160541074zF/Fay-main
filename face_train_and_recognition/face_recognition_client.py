@@ -23,6 +23,6 @@ def detect_face_with_api(image_path):
     print(result['result_name'])
 
 if __name__ == '__main__':
-    image_path = '2.lena.jpg'
+    image_path = '1.james.jpg'
     result_name = detect_face_with_api(image_path)
 
