@@ -19,7 +19,10 @@ def send_image_to_api(image_path, image_name):
     print(result['message'])
 
 
+
+
+
 if __name__ == '__main__':
-    image_path = '1.james.jpg'
-    image_name = 'james'  # 设置图片名字（除去文件后缀 .jpg）
+    image_path = '2.lena.jpg'
+    image_name = 'lena'  # 设置图片名字（除去文件后缀 .jpg）
     send_image_to_api(image_path, image_name)

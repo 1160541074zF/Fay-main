@@ -24,5 +24,5 @@ def detect_face_with_api(image_path):
 
 if __name__ == '__main__':
     image_path = '1.james.jpg'
-    result_name = detect_face_with_api(image_path)
+    detect_face_with_api(image_path)
 
