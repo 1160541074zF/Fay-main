@@ -70,6 +70,9 @@ def determine_nlp_strategy(sendto,msg):
         if sendto == 3:
             text = ecarechat.question(msg)
             print(text)
+        if sendto == 7:
+            text = ecarechat.control(msg)
+            print(text)
         else:
             # if cfg.key_chat_module == 'yuan':
             #     text = yuan1_0_dialog.question(msg)
