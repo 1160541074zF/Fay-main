@@ -953,23 +953,26 @@ def save_image():
         image_data = data['image_data']
         original_filename = data['filename']
 
+        # 获取当前路径basedir
+        basedir = os.path.abspath(os.path.dirname(__file__))
+
         # 获取图片的保存路径和文件名
-        save_folder = '../face_train_and_recognition/data/jm/'
+        save_folder = basedir + '/../face_train_and_recognition/data/jm/'
         number = get_next_number(save_folder)
         image_save_filename = f"{number}.{original_filename}.jpg"
 
         # 图片保存路径，保持文件名与原图片名字一致
-        image_save_path = os.path.join('../face_train_and_recognition/data/jm/', image_save_filename)
+        image_save_path = os.path.join(basedir + '/../face_train_and_recognition/data/jm/', image_save_filename)
 
         # 保存图片到指定路径
         save_base64_image(image_data, image_save_path)
 
         # 在保存图片后，调用getImageAndLabels方法进行人脸识别的训练
-        path = '../face_train_and_recognition/data/jm/'
+        path = basedir + '/../face_train_and_recognition/data/jm/'
         faces, ids = getImageAndLabels(path)
         recognizer = cv2.face.LBPHFaceRecognizer_create()
         recognizer.train(faces, np.array(ids))
-        recognizer.write('../face_train_and_recognition/trainer/trainer.yml')
+        recognizer.write(basedir + '/../face_train_and_recognition/trainer/trainer.yml')
 
         return jsonify({'message': f"图片保存成功，人脸识别训练完成,id:{number},姓名:{original_filename}"})
 

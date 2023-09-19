@@ -14,12 +14,15 @@ warningtime = 0
 
 # 人脸识别
 def face_recognition(image_data):
+    # 获取当前路径basedir
+    basedir = os.path.abspath(os.path.dirname(__file__))
+
     recognizer = cv2.face.LBPHFaceRecognizer_create()
-    recognizer.read('../face_train_and_recognition/trainer/trainer.yml')
+    recognizer.read(basedir + '/../face_train_and_recognition/trainer/trainer.yml')
 
     # 把目录下的图片名字存入到一个数组中
     names = []
-    path = '../face_train_and_recognition/data/jm'
+    path = basedir + '/../face_train_and_recognition/data/jm'
     imagePaths = [os.path.join(path, f) for f in os.listdir(path)]
     for imagePath in imagePaths:
         name = str(os.path.split(imagePath)[1].split('.', 2)[1])
@@ -32,7 +35,7 @@ def face_recognition(image_data):
 
     # 人脸检测函数
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    face_detect = cv2.CascadeClassifier('../face_train_and_recognition/haarcascade_frontalface_alt2.xml')
+    face_detect = cv2.CascadeClassifier(basedir + '/../face_train_and_recognition/haarcascade_frontalface_alt2.xml')
 
     face = face_detect.detectMultiScale(gray,1.01,5,0,(100,100),(300,300))
 
@@ -42,7 +45,7 @@ def face_recognition(image_data):
 
         # 人脸识别
         ids, confidence = recognizer.predict(gray[y:y + h, x:x + w])
-        if confidence > 60:
+        if confidence > 70:
             name = 'null'
             ids = 0
             cv2.putText(img, 'unkonw', (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 1)
@@ -61,11 +64,14 @@ def face_recognition(image_data):
 
 
 def getImageAndLabels(path):
+    # 获取当前路径basedir
+    basedir = os.path.abspath(os.path.dirname(__file__))
+
     facesSamples=[]
     ids=[]
     imagePaths=[os.path.join(path,f) for f in os.listdir(path)]
     #检测人脸
-    face_detector = cv2.CascadeClassifier('../face_train_and_recognition/haarcascade_frontalface_alt2.xml')
+    face_detector = cv2.CascadeClassifier(basedir +'/../face_train_and_recognition/haarcascade_frontalface_alt2.xml')
     #打印数组imagePaths
     print('数据排列：',imagePaths)
     #遍历列表中的图片
