@@ -16,6 +16,7 @@ import os
 import cv2
 import numpy as np
 
+
 from core.tts_voice import EnumVoice
 from gevent import pywsgi
 
@@ -106,6 +107,7 @@ def receive_data():
         return jsonify({"status": "error", "message": str(e)})
 
 
+
 # @__app.route('/api/get-medicine', methods=['GET'])
 # def get_medicine_by_id():
 #     try:
@@ -163,7 +165,6 @@ def receive_message():
     response = {'message': 'send successfully'}
     return jsonify(response), 200  # 返回响应和状态码
 
-
 # 语音播报
 def receive_message_method(message):
     kafka_ip = "192.168.3.48:9092"
@@ -174,7 +175,6 @@ def receive_message_method(message):
     }
     print(message)
     client.send_message_to_kafka(kafka_ip, topic_name, message)
-
 
 @__app.route("/robot/control", methods=["POST"])
 def robot_control():
@@ -187,7 +187,6 @@ def robot_control():
     response = {'message': 'send successfully'}
     return jsonify(response), 200  # 返回响应和状态码
 
-
 # 播放视频
 def robot_control_method():
     kafka_ip = "192.168.3.48:9092"
@@ -196,20 +195,18 @@ def robot_control_method():
     # Process to send message
     client.send_sport_robot(kafka_ip, topic_name, message)
 
-
 @__app.route('/api/submit', methods=['post'])
 def api_submit():
     data = request.values.get('data')
     print(data)
     config_data = json.loads(data)
-    if (config_data['config']['source']['record']['enabled']):
+    if(config_data['config']['source']['record']['enabled']):
         config_data['config']['source']['record']['channels'] = 0
         audio = pyaudio.PyAudio()
         for i in range(audio.get_device_count()):
             devInfo = audio.get_device_info_by_index(i)
-            if devInfo['name'].find(config_data['config']['source']['record']['device']) >= 0 and devInfo[
-                'hostApi'] == 0:
-                config_data['config']['source']['record']['channels'] = devInfo['maxInputChannels']
+            if devInfo['name'].find(config_data['config']['source']['record']['device']) >= 0 and devInfo['hostApi'] == 0:
+                 config_data['config']['source']['record']['channels'] = devInfo['maxInputChannels']
 
     config_util.save_config(config_data['config'])
 
@@ -239,6 +236,7 @@ def receive_image():
 
             with open(image_url, 'wb') as f:
                 f.write(image_data)
+
 
             return jsonify({"status": "success", "image_url": image_url})
 
@@ -284,6 +282,7 @@ def get_robot_data():
     print(data)
     response_data = {'message': 'Data received successfully'}
     return jsonify(response_data)
+
 
 
 # 创建数据库表（如果还不存在）
@@ -367,36 +366,36 @@ def save_medicine_info():
     return 'User information saved successfully.'
 
 
-@__app.route('/save-location-info', methods=['POST'])
-def save_location_info():
-    try:
-        if request.method == 'POST':
-            location_info = request.json  # 假设前端将数据以JSON格式发送
-            print(location_info)
-            location = location_info.get('location')
-            coordinate = location_info.get('coordinate')
-
-            # 设置SQLite数据库连接
-            conn = sqlite3.connect('fay.db')
-            print(conn)
-            cursor = conn.cursor()
-            print(cursor)
-
-            # 插入数据到数据库
-            cursor.execute('''INSERT INTO location_inform (location, coordinate)
-                              VALUES (?, ?)''', (location, coordinate))
-            conn.commit()
-            cursor.close()
-            conn.close()
-            return 'User information saved successfully.'
-    except sqlite3.Error as e:
-        print(e)
-        return 'An error occurred while saving location information.'
-    except Exception as e:
-        print(e)
-        return 'An error occurred while saving location information.'
-
-    return 'User information saved successfully.'
+# @__app.route('/save-location-info', methods=['POST'])
+# def save_location_info():
+#     try:
+#         if request.method == 'POST':
+#             location_info = request.json  # 假设前端将数据以JSON格式发送
+#             print(location_info)
+#             location = location_info.get('location')
+#             coordinate = location_info.get('coordinate')
+#
+#             # 设置SQLite数据库连接
+#             conn = sqlite3.connect('fay.db')
+#             print(conn)
+#             cursor = conn.cursor()
+#             print(cursor)
+#
+#             # 插入数据到数据库
+#             cursor.execute('''INSERT INTO location_inform (location, coordinate)
+#                               VALUES (?, ?)''', (location, coordinate))
+#             conn.commit()
+#             cursor.close()
+#             conn.close()
+#             return 'User information saved successfully.'
+#     except sqlite3.Error as e:
+#         print(e)
+#         return 'An error occurred while saving location information.'
+#     except Exception as e:
+#         print(e)
+#         return 'An error occurred while saving location information.'
+#
+#     return 'User information saved successfully.'
 
 
 @__app.route('/save-sit-time', methods=['POST'])
@@ -428,7 +427,6 @@ def save_time_info():
         return 'An error occurred while saving sittime information.'
 
     return 'User information saved successfully.'
-
 
 @__app.route('/api/control-eyes', methods=['post'])
 def control_eyes():
@@ -471,7 +469,6 @@ def api_stop_live():
     wsa_server.get_web_instance().add_cmd({"liveState": 0})
     return '{"result":"successful"}'
 
-
 @__app.route('/api/send', methods=['post'])
 def api_send():
     # data = request.values.get('data')
@@ -481,6 +478,7 @@ def api_send():
     # info = json.loads(data)
     text = fay_core.send_for_answer(data['msg'], data['sendto'])
     return '{"result":"successful","msg":"' + text + '"}'
+
 
 
 @__app.route('/api/get-msg', methods=['post'])
@@ -495,6 +493,7 @@ def api_get_Msg():
         i -= 1
 
     return json.dumps({'list': relist})
+
 
 
 @__app.route('/api/get-location', methods=['get'])
@@ -579,7 +578,6 @@ def save_user_info():
 
     return 'User information saved successfully.'
 
-
 # 修改用户信息
 @__app.route('/update-user-info', methods=['POST'])
 def update_user_info():
@@ -615,7 +613,6 @@ def update_user_info():
 
     return 'User information updated successfully.'
 
-
 # 删除用户信息
 @__app.route('/delete-user-info/<int:user_id>', methods=['DELETE'])
 def delete_user_info(user_id):
@@ -646,8 +643,7 @@ def delete_user_info(user_id):
     #     print(e)
     #     return 'An error occurred while deleting user information.'
 
-    return 'User information deleted successfully.'
-
+        return 'User information deleted successfully.'
 
 # 读用药信息
 @__app.route('/read-med-info', methods=['GET'])
@@ -683,7 +679,6 @@ def read_med_inform():
     except Exception as e:
         return jsonify({"status": "error", "message": "读取用药信息失败", "error": str(e)})
 
-
 # 修改用药信息
 @__app.route('/update-med-info', methods=['POST'])
 def update_med_info():
@@ -712,7 +707,6 @@ def update_med_info():
 
     except Exception as e:
         return jsonify({"status": "error", "message": "更新用药信息失败", "error": str(e)})
-
 
 # 保存用药信息
 @__app.route('/save-med-info', methods=['POST'])
@@ -744,7 +738,7 @@ def save_med_info():
         # 插入数据到数据库
         cursor.execute('''INSERT INTO med_inform (med_name, med_spec, med_usage, med_freq, med_dosage, time, med_num, user_name)
                                          VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                       (med_name, med_spec, med_usage, med_freq, med_dosage, time, med_num, user_name))
+                           (med_name, med_spec, med_usage, med_freq, med_dosage, time, med_num, user_name))
         conn.commit()
         cursor.close()
         conn.close()
@@ -761,9 +755,8 @@ def save_med_info():
 
     return jsonify(response)
 
-
-# except Exception as e:
-#     return jsonify({"status": "error", "message": str(e)})
+    # except Exception as e:
+    #     return jsonify({"status": "error", "message": str(e)})
 
 # 删除用药信息
 @__app.route('/delete-med-info/<int:med_id>', methods=['DELETE'])
@@ -826,7 +819,6 @@ def read_state_inform():
     except Exception as e:
         return jsonify({"status": "error", "message": "读取用户信息失败", "error": str(e)})
 
-
 # 保存健康状态
 @__app.route('/save-state-info', methods=['POST'])
 def save_state_info():
@@ -858,7 +850,6 @@ def save_state_info():
         return 'An error occurred while saving user state information.'
 
     return 'User state information saved successfully.'
-
 
 # 修改健康状态
 @__app.route('/update-state-info', methods=['POST'])
@@ -892,7 +883,6 @@ def update_state_info():
 
     return 'User state information updated successfully.'
 
-
 # 删除健康状态
 @__app.route('/delete-state-info/<int:id>', methods=['DELETE'])
 def delete_state_info(id):
@@ -925,6 +915,126 @@ def delete_state_info(id):
 
     return 'User state information deleted successfully.'
 
+# 读地图信息
+@__app.route('/read-location-info', methods=['GET'])
+def read_location_info():
+    # try:
+        conn = sqlite3.connect('Ecarebot.db')
+        cursor = conn.cursor()
+        query = 'SELECT id, location, coordinate FROM robot_state'
+        cursor.execute(query, ())
+        location_info = cursor.fetchall()
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        list = [
+            {
+                'id': row[0],
+                'loctaion': row[1],
+                'coordinate': row[2],
+            }
+            for row in location_info
+        ]
+        print(list)
+        return jsonify({"status": "success", "location_info": list})
+
+    # except Exception as e:
+    #     return jsonify({"status": "error", "message": "读取用户信息失败", "error": str(e)})
+
+# 保存地图信息
+@__app.route('/save-location-info', methods=['POST'])
+def save_location_info():
+    try:
+        if request.method == 'POST':
+            location_info = request.json
+            print(location_info)
+            location = location_info.get('location')
+            coordinate = location_info.get('coordinate')
+            # 设置SQLite数据库连接
+            conn = sqlite3.connect('Ecarebot.db')
+            print(conn)
+            cursor = conn.cursor()
+            print(cursor)
+            # 插入数据到数据库
+            cursor.execute('''INSERT INTO robot_state (location, coordinate)
+                              VALUES (?, ?, ?, ?, ?, ?)''', (location, coordinate))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return 'Loctaion information saved successfully.'
+    except sqlite3.Error as e:
+        print(e)
+        return 'An error occurred while saving location information.'
+    except Exception as e:
+        print(e)
+        return 'An error occurred while saving location information.'
+
+    return 'Loctaion information saved successfully.'
+
+# 修改地图信息
+@__app.route('/update-location-info', methods=['POST'])
+def update_location_info():
+    try:
+        if request.method == 'POST':
+            location_info = request.json
+            print(location_info)
+            id = int(location_info.get('id'))
+            location = location_info.get('location')
+            coordinate = location_info.get('coordinate')
+
+            # 设置SQLite数据库连接
+            conn = sqlite3.connect('Ecarebot.db')
+            cursor = conn.cursor()
+
+            # 使用用户ID更新数据库中的数据
+            cursor.execute('''UPDATE robot_state
+                              SET location = ?, coordinate = ?
+                              WHERE id = ?''', (location, coordinate))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return 'Location information updated successfully.'
+    except sqlite3.Error as e:
+        print(e)
+        return 'An error occurred while updating location information.'
+    except Exception as e:
+        print(e)
+        return 'An error occurred while updating location information.'
+
+    return 'Location information updated successfully.'
+
+# 删除地图信息
+@__app.route('/delete-location-info/<int:location_id>', methods=['DELETE'])
+def delete_location_info(location_id):
+    # try:
+        if request.method == 'DELETE':
+            # 设置SQLite数据库连接
+            conn = sqlite3.connect('Ecarebot.db')
+            cursor = conn.cursor()
+
+            # 检查是否存在要删除的用户信息
+            cursor.execute("SELECT * FROM robot_state WHERE id=?", (location_id,))
+            user_data = cursor.fetchone()
+
+            if user_data:
+                # 执行删除操作
+                cursor.execute("DELETE FROM robot_state WHERE id=?", (location_id,))
+                conn.commit()
+                conn.close()
+                return 'Location information deleted successfully.'
+            else:
+                conn.close()
+                return 'Location information not found.'
+
+    # except sqlite3.Error as e:
+    #     print(e)
+    #     return 'An error occurred while deleting user information.'
+    # except Exception as e:
+    #     print(e)
+    #     return 'An error occurred while deleting user information.'
+
+        return 'Location information deleted successfully.'
 
 @__app.route('/recognition_face', methods=['POST'])
 def detect_face():
@@ -943,7 +1053,6 @@ def detect_face():
         return jsonify({'result_image': result_image_base64, 'result_name': result_name, 'result_id': result_id})
     except Exception as e:
         return jsonify({'error': 'An error occurred: {}'.format(str(e))})
-
 
 @__app.route('/save_image_and_train', methods=['POST'])
 def save_image():
@@ -979,7 +1088,6 @@ def save_image():
     except Exception as e:
         return jsonify({'error': 'An error occurred: {}'.format(str(e))})
 
-
 # 危险识别接口
 @__app.route('/detection/danger', methods=['post'])
 def danger_detection():
@@ -1005,8 +1113,7 @@ def danger_detection():
     except Exception as e:
         return jsonify({'error': '请求处理出错：' + str(e)}), 500
 
-
-@__app.route('/recognition/emotion', methods=['post'])
+@__app.route('/recognition/emotion',methods=['post'])
 def emotion_recognition():
     try:
         request_data = request.json
@@ -1025,7 +1132,6 @@ def emotion_recognition():
         return jsonify({'error': '请求处理出错：' + str(e)}), 500
     except Exception as e:
         return jsonify({'error': '请求处理出错：' + str(e)}), 500
-
 
 # 行为识别接口：大模型识别结果、姿态结果、久坐时长
 @__app.route('/recognition/posture', methods=['post'])
@@ -1061,7 +1167,7 @@ def posture_recognition():
         id, timespan, date_time = row
         # 保存老人姿态数据
         cursor.execute("insert into posture_info (posture,time) values(?,?)",
-                       (posture, time))
+                                           (posture, time))
         conn.commit()
         # 久坐时长
         sittime = 0
@@ -1127,7 +1233,7 @@ def posture_recognition():
                 if timespan < 120:
                     print("清空久坐时长")
                     cursor.execute("UPDATE sedentary_info SET timespan=? WHERE id=?",
-                                   (0, id))
+                                           (0, id))
                     conn.commit()
                 if posture == 1:
                     # 跌倒处理：语音播报
@@ -1151,17 +1257,14 @@ def posture_recognition():
         if conn:
             conn.close()
 
-
 def run():
-    server = pywsgi.WSGIServer(('0.0.0.0', 5000), __app)
+    server = pywsgi.WSGIServer(('0.0.0.0',5000), __app)
     server.serve_forever()
-
 
 def start():
     # MyThread(target=run).start()
     thread = threading.Thread(target=run)
     thread.start()
-
 
 if __name__ == '__main__':
     __app.run()

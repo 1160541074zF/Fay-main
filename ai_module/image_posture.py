@@ -9,22 +9,22 @@ def image_to_base64(image_path):
 # 图像识别大模型分析人体姿态
 def posture_recognition(image_base64):
     try:
-        # url = "https://Sdia-LLM-KG-yu74wtz23f8m.serv-c1.openbayes.net"
-        # data = {
-        #     "image": image_base64,
-        #     # "text": "帮我描述一下图片中的老人是坐、躺、站、跌倒哪种姿态",
-        #     "text": "请根据图片分析老人的人体姿态，包括躺、坐、立、跌倒，并提供关于姿态的描述",
-        #     "history": []
-        # }
-        # completion = requests.post(url, json=data)
-        # response = completion.content.decode()
-        # # result history status time
-        # # response = 'no healthy upstream'
-        # return response
-        result_data = {
-            "result": "老人正坐在沙发上"
+        url = "https://Sdia-LLM-KG-yu74wtz23f8m.serv-c1.openbayes.net"
+        data = {
+            "image": image_base64,
+            # "text": "帮我描述一下图片中的老人是坐、躺、站、跌倒哪种姿态",
+            "text": "请根据图片分析老人的人体姿态，包括躺、坐、立、跌倒，并提供关于姿态的描述",
+            "history": []
         }
-        return json.dumps(result_data)
+        completion = requests.post(url, json=data)
+        response = completion.content.decode()
+        # result history status time
+        # response = 'no healthy upstream'
+        return response
+        # result_data = {
+        #     "result": "老人正坐在沙发上"
+        # }
+        # return json.dumps(result_data)
     except Exception as e:
         return '行为识别请求失败，请稍后重试'
 
