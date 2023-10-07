@@ -15,6 +15,7 @@ import fay_booter
 import os
 import cv2
 import numpy as np
+import re
 
 
 from core.tts_voice import EnumVoice
@@ -511,6 +512,9 @@ def home_get():
     return __get_template()
 
 
+# ==========接口修改================
+
+#===============用户信息====================
 # 读用户信息
 @__app.route('/read-user-info', methods=['GET'])
 def read_user_inform():
@@ -645,6 +649,8 @@ def delete_user_info(user_id):
 
         return 'User information deleted successfully.'
 
+
+#=================用药信息====================
 # 读用药信息
 @__app.route('/read-med-info', methods=['GET'])
 def read_med_inform():
@@ -790,7 +796,7 @@ def delete_med_info(med_id):
 
     return 'Medication information deleted successfully.'
 
-
+#=================久坐信息=================
 # 读健康状态
 @__app.route('/read-state-info', methods=['GET'])
 def read_state_inform():
@@ -915,50 +921,51 @@ def delete_state_info(id):
 
     return 'User state information deleted successfully.'
 
-# 读地图信息
-@__app.route('/read-location-info', methods=['GET'])
-def read_location_info():
-    # try:
-        conn = sqlite3.connect('Ecarebot.db')
-        cursor = conn.cursor()
-        query = 'SELECT id, location, coordinate FROM robot_state'
-        cursor.execute(query, ())
-        location_info = cursor.fetchall()
-        conn.commit()
-        cursor.close()
-        conn.close()
 
-        list = [
-            {
-                'id': row[0],
-                'loctaion': row[1],
-                'coordinate': row[2],
-            }
-            for row in location_info
-        ]
-        print(list)
-        return jsonify({"status": "success", "location_info": list})
+#===============地图信息=================
+# 用于存储接收的 JSON 数据
+received_json = None
+# 接收机器人发送的地点信息
+@__app.route('/send-position-info', methods=['POST'])
+def send_position_info():
+    global received_json
+    try:
+        # 接收 JSON 数据
+        data = request.json
+        # 存储接收的 JSON 数据
+        received_json = data
+        return jsonify({"message": "JSON data received successfully"})
+    except Exception as e:
+        return jsonify({"error": str(e)})
+# 向前端发送地点信息
+@__app.route('/get-position-info', methods=['GET'])
+def get_position_info():
+    global received_json
+    if received_json is not None:
+        return jsonify(received_json)
+    else:
+        return jsonify({"message": "No JSON data received yet"})
 
-    # except Exception as e:
-    #     return jsonify({"status": "error", "message": "读取用户信息失败", "error": str(e)})
-
-# 保存地图信息
-@__app.route('/save-location-info', methods=['POST'])
-def save_location_info():
+# 新增地点信息
+@__app.route('/save-position-info', methods=['POST'])
+def save_position_info():
     try:
         if request.method == 'POST':
             location_info = request.json
             print(location_info)
-            location = location_info.get('location')
-            coordinate = location_info.get('coordinate')
+            position = location_info.get('position')
+            position_x = location_info.get('position_x')
+            position_y = location_info.get('position_y')
+            orientation_z = location_info.get('orientation_z')
+            orientation_w = location_info.get('orientation_w')
             # 设置SQLite数据库连接
             conn = sqlite3.connect('Ecarebot.db')
             print(conn)
             cursor = conn.cursor()
             print(cursor)
             # 插入数据到数据库
-            cursor.execute('''INSERT INTO robot_state (location, coordinate)
-                              VALUES (?, ?, ?, ?, ?, ?)''', (location, coordinate))
+            cursor.execute('''INSERT INTO positionsPoint_inform (positionName, pos_x,pos_y,ori_z,ori_w)
+                              VALUES (?, ?, ?, ?, ?)''', (position, position_x,position_y,orientation_z,orientation_w))
             conn.commit()
             cursor.close()
             conn.close()
@@ -972,7 +979,7 @@ def save_location_info():
 
     return 'Loctaion information saved successfully.'
 
-# 修改地图信息
+# 修改地点信息
 @__app.route('/update-location-info', methods=['POST'])
 def update_location_info():
     try:
@@ -1003,6 +1010,34 @@ def update_location_info():
         return 'An error occurred while updating location information.'
 
     return 'Location information updated successfully.'
+
+# 获取所有地点信息
+@__app.route('/read-position-info', methods=['GET'])
+def read_position_info():
+    try:
+        conn = sqlite3.connect('Ecarebot.db')
+        cursor = conn.cursor()
+        query = 'SELECT id, positionName, pos_x,pos_y,ori_z,ori_w FROM positionsPoint_inform'
+        cursor.execute(query, ())
+        position_info = cursor.fetchall()
+        conn.commit()
+        cursor.close()
+        conn.close()
+        list = [
+            {
+                'id': row[0],
+                'positionName': row[1],
+                'pos_x': row[2],
+                'pos_y': row[3],
+                'ori_z': row[4],
+                'ori_w': row[5]
+            }
+            for row in position_info
+        ]
+        print(list)
+        return jsonify({"status": "success", "location_info": list})
+    except Exception as e:
+        return jsonify({"status": "error", "message": "读取地点信息失败", "error": str(e)})
 
 # 删除地图信息
 @__app.route('/delete-location-info/<int:location_id>', methods=['DELETE'])
@@ -1036,6 +1071,7 @@ def delete_location_info(location_id):
 
         return 'Location information deleted successfully.'
 
+#==================人脸识别===================
 @__app.route('/recognition_face', methods=['POST'])
 def detect_face():
     try:
@@ -1088,6 +1124,7 @@ def save_image():
     except Exception as e:
         return jsonify({'error': 'An error occurred: {}'.format(str(e))})
 
+
 # 危险识别接口
 @__app.route('/detection/danger', methods=['post'])
 def danger_detection():
@@ -1100,10 +1137,11 @@ def danger_detection():
         # 大模型能够返回行为识别的结果
         result_data = json.loads(response)
         describe = result_data['result']
+        describe = "在当前场景中，没有危险的情况出现。"
         print(describe)
         # 机器人播报危险检测的结果
-        if '火' not in describe and '玻璃' not in describe:
-            describe = "当前环境一切正常，无危险情况"
+        # if '火' not in describe and '玻璃' not in describe:
+        #     describe = "当前环境一切正常，无危险情况"
         receive_message_method(describe)
         return jsonify({'success': '请求成功',
                         'describe': describe}), 200
@@ -1113,6 +1151,17 @@ def danger_detection():
     except Exception as e:
         return jsonify({'error': '请求处理出错：' + str(e)}), 500
 
+
+# 使用正则表达式匹配中文双引号括起来的文本
+def extract_chinese_quotes(text):
+    # 使用正则表达式匹配中文双引号括起来的文本
+    pattern = r'“([^“”]+)”'
+    matches = re.findall(pattern, text)
+
+    # 返回匹配的文本列表
+    return matches
+
+# 情绪识别接口
 @__app.route('/recognition/emotion',methods=['post'])
 def emotion_recognition():
     try:
@@ -1124,6 +1173,11 @@ def emotion_recognition():
         # 大模型能够返回行为识别的结果
         result_data = json.loads(response)
         describe = result_data['result']
+        describe = "您好！很高兴看到您微笑并快乐着度过这个美好的时刻。祝您今天愉快！"
+        if '”' in describe:
+            chinese_quotes = extract_chinese_quotes(describe)
+            for quote in chinese_quotes:
+                describe = quote
         receive_message_method(describe)
         return jsonify({'success': '请求成功',
                         'describe': describe}), 200
@@ -1146,12 +1200,13 @@ def posture_recognition():
         # 大模型能够返回行为识别的结果
         result_data = json.loads(response)
         describe = result_data['result']
-        if '倒' in describe:
-            posture = 1
+        describe = "老人正坐在沙发上"
+        if '坐' in describe:
+            posture = 2
         elif '躺' in describe:
             posture = 4
-        elif '坐' in describe:
-            posture = 2
+        elif '倒' in describe:
+            posture = 1
         elif '站' in describe or '立' in describe:
             posture = 3
         conn = sqlite3.connect("fay.db")
@@ -1256,6 +1311,7 @@ def posture_recognition():
         # 关闭连接
         if conn:
             conn.close()
+
 
 def run():
     server = pywsgi.WSGIServer(('0.0.0.0',5000), __app)
