@@ -1076,14 +1076,39 @@ def delete_location_info(position_id):
 @__app.route('/position-priority', methods=['POST'])
 def position_priority():
     # 接收优先级配置数据
-    print("11")
+    data = request.json
+    # 3个点位的名称
+    location1 = data["location1"]
+    location2 = data["location2"]
+    location3 = data["location3"]
+    # 源数据库
+    source_conn = sqlite3.connect('Ecarebot.db')  # 替换成你的数据库文件名
+    source_cursor = source_conn.cursor()
+    # 目标数据库
+    destination_conn = sqlite3.connect('homePositions.db')  # 替换成你的目标数据库文件名
+    destination_cursor = destination_conn.cursor()
+
     # 清空优先级配置表
-    # conn1 = sqlite3.connect('homePositions.db')
-    # cursor1 = conn1.cursor()
-    # cursor1.execute("DELETE FROM positionsPoint")
-    # conn1.commit()
-    # 查询坐标具体信息
+    destination_conn.execute("DELETE FROM positionsPoint")
+    destination_conn.commit()
     # 保存坐标信息及其优先级至数据表中
+    for i in range(3):
+        # 查询地点数据
+        name = "location"
+        location_name = f"{name}_{i}"
+        source_cursor.execute("SELECT positionName, pos_x,pos_y,ori_z,ori_w FROM positionsPoint_inform WHERE positionName = ?",
+                              (location_name,))
+        location = source_cursor.fetchall()
+        # destination_cursor.execute('''INSERT INTO positionsPoint_inform (positionName, pos_x,pos_y,ori_z,ori_w)
+        #                              VALUES (?, ?, ?, ?, ?)''',
+        #                (position, position_x, position_y, orientation_z, orientation_w))
+        # 提交更改到目标数据库
+        destination_conn.commit()
+
+    # 关闭数据库连接
+    source_conn.close()
+    destination_conn.close()
+
     # 将新的数据库表同步至机器人上
 
 @__app.route('/read-position-info', methods=['GET'])
