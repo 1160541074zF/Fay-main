@@ -921,7 +921,6 @@ def delete_state_info(id):
 
     return 'User state information deleted successfully.'
 
-
 #===============地图信息=================
 # 用于存储接收的 JSON 数据
 received_json = None
@@ -1041,22 +1040,21 @@ def read_position_info():
         return jsonify({"status": "error", "message": "读取地点信息失败", "error": str(e)})
 
 # 删除地图信息
-@__app.route('/delete-location-info/<int:location_id>', methods=['DELETE'])
-def delete_location_info(location_id):
+@__app.route('/delete-position-info/<int:position_id>', methods=['DELETE'])
+def delete_location_info(position_id):
     # try:
         if request.method == 'DELETE':
             # 设置SQLite数据库连接
-            print(location_id)
-            print(type(location_id))
+            print(position_id)
             conn = sqlite3.connect('Ecarebot.db')
             cursor = conn.cursor()
 
-            cursor.execute("SELECT * FROM positionsPoint_inform WHERE id=?", (int(location_id),))
+            cursor.execute("SELECT * FROM positionsPoint_inform WHERE id=?", (int(position_id),))
             position_data = cursor.fetchone()
 
             if position_data:
                 # 执行删除操作
-                cursor.execute("DELETE FROM positionsPoint_inform WHERE id=?", (int(location_id),))
+                cursor.execute("DELETE FROM positionsPoint_inform WHERE id=?", (int(position_id),))
                 conn.commit()
                 conn.close()
                 return 'Location information deleted successfully.'
@@ -1072,6 +1070,25 @@ def delete_location_info(location_id):
     #     return 'An error occurred while deleting user information.'
 
         return 'Location information deleted successfully.'
+
+#=================巡检优先级=======================
+# 配置巡检优先级
+@__app.route('/position-priority', methods=['POST'])
+def position_priority():
+    # 接收优先级配置数据
+    print("11")
+    # 清空优先级配置表
+    # conn1 = sqlite3.connect('homePositions.db')
+    # cursor1 = conn1.cursor()
+    # cursor1.execute("DELETE FROM positionsPoint")
+    # conn1.commit()
+    # 查询坐标具体信息
+    # 保存坐标信息及其优先级至数据表中
+    # 将新的数据库表同步至机器人上
+
+@__app.route('/read-position-info', methods=['GET'])
+
+@__app.route('/', methods=['GET'])
 
 #==================人脸识别===================
 @__app.route('/recognition_face', methods=['POST'])
