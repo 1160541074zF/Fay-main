@@ -134,3 +134,4 @@ dmypy.json
 # database
 fay.db
 /gui/fay.db
+test/

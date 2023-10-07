@@ -65,12 +65,12 @@ def determine_nlp_strategy(sendto,msg):
         # cfg.load_config()
         if sendto == 1:
             text = nlp_VisualGLM.question(msg)
-        if sendto == 2:
+        elif sendto == 2:
             text = tochat.question(msg)
-        if sendto == 3:
+        elif sendto == 3:
             text = ecarechat.question(msg)
             print(text)
-        if sendto == 7:
+        elif sendto == 7:
             text = ecarechat.control(msg)
             print(text)
         else:
