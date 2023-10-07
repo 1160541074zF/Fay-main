@@ -980,24 +980,25 @@ def save_position_info():
     return 'Loctaion information saved successfully.'
 
 # 修改地点信息
-@__app.route('/update-location-info', methods=['POST'])
-def update_location_info():
+@__app.route('/update-position-info', methods=['POST'])
+def update_position_info():
     try:
         if request.method == 'POST':
             location_info = request.json
             print(location_info)
             id = int(location_info.get('id'))
-            location = location_info.get('location')
-            coordinate = location_info.get('coordinate')
-
+            position = location_info.get('position')
+            position_x = location_info.get('position_x')
+            position_y = location_info.get('position_y')
+            orientation_z = location_info.get('orientation_z')
+            orientation_w = location_info.get('orientation_w')
             # 设置SQLite数据库连接
             conn = sqlite3.connect('Ecarebot.db')
             cursor = conn.cursor()
-
             # 使用用户ID更新数据库中的数据
-            cursor.execute('''UPDATE robot_state
-                              SET location = ?, coordinate = ?
-                              WHERE id = ?''', (location, coordinate))
+            cursor.execute('''UPDATE positionsPoint_inform
+                              SET positionName = ?, pos_x = ? ,pos_y = ? ,ori_z = ? ,ori_w = ?
+                              WHERE id = ?''', (position, position_x, position_y, orientation_z, orientation_w, id))
             conn.commit()
             cursor.close()
             conn.close()
@@ -1045,16 +1046,17 @@ def delete_location_info(location_id):
     # try:
         if request.method == 'DELETE':
             # 设置SQLite数据库连接
+            print(location_id)
+            print(type(location_id))
             conn = sqlite3.connect('Ecarebot.db')
             cursor = conn.cursor()
 
-            # 检查是否存在要删除的用户信息
-            cursor.execute("SELECT * FROM robot_state WHERE id=?", (location_id,))
-            user_data = cursor.fetchone()
+            cursor.execute("SELECT * FROM positionsPoint_inform WHERE id=?", (int(location_id),))
+            position_data = cursor.fetchone()
 
-            if user_data:
+            if position_data:
                 # 执行删除操作
-                cursor.execute("DELETE FROM robot_state WHERE id=?", (location_id,))
+                cursor.execute("DELETE FROM positionsPoint_inform WHERE id=?", (int(location_id),))
                 conn.commit()
                 conn.close()
                 return 'Location information deleted successfully.'
