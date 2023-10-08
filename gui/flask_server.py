@@ -1263,14 +1263,14 @@ def detect_face():
         image_data = request.json['image_data']
 
         # 进行人脸检测
-        result_image, result_name, result_id,result_is_first_recognition_today= face_recognition(image_data)
+        result_image, result_name, result_id= face_recognition(image_data)
 
         # 将结果图片转换为 base64 编码
         retval, buffer = cv2.imencode('.jpg', result_image)
         result_image_base64 = base64.b64encode(buffer).decode('utf-8')
 
         # 返回结果
-        return jsonify({'result_image': result_image_base64, 'result_name': result_name, 'result_id': result_id,'result_is_first_recognition_today':result_is_first_recognition_today})
+        return jsonify({'result_image': result_image_base64, 'result_name': result_name, 'result_id': result_id})
 
     except Exception as e:
         return jsonify({'error': 'An error occurred: {}'.format(str(e))})

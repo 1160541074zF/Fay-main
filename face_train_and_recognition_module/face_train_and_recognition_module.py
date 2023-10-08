@@ -7,6 +7,7 @@ import numpy as np
 import sqlite3
 from datetime import datetime
 from datetime import date
+from gui import flask_server
 
 
 
@@ -76,19 +77,22 @@ def face_recognition(image_data):
             # name = names[ids - 1]
 
             name = image_dict[str(ids)]
+            # 添加人脸识别记录
+            insert_face_recognition_record(name, ids)
 
             # 判断是否是第一次识别
             is_first_recognition_today = check_user_id_in_database(ids)
             if is_first_recognition_today:
                 print("今天有记录")
+                flask_server.receive_message_method("再次见到你很高兴")
             else:
                 print("今天没有记录")
+                flask_server.receive_message_method("今天我是第一次见到你")
 
-            # 添加人脸识别记录
-            insert_face_recognition_record(name, ids)
+
 
             cv2.putText(img, name, (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 1)
-    return img,name,ids,is_first_recognition_today
+    return img,name,ids
 
 
 # def name():
@@ -154,8 +158,17 @@ def insert_face_recognition_record(user_name, user_id):
     basedir = os.path.abspath(os.path.dirname(__file__))
 
     # 连接到数据库
-    conn = sqlite3.connect('../gui/Ecarebot.db')
+    conn = sqlite3.connect('gui/Ecarebot.db')
     cursor = conn.cursor()
+    # 创建表格用于存储记录
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS face_recognition_records (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_name TEXT,
+            user_id INTEGER,
+            recognition_time TIMESTAMP
+        )
+    ''')
 
     # 获取当前时间
     recognition_time = datetime.now()
@@ -174,7 +187,7 @@ def check_user_id_in_database(user_id):
     basedir = os.path.abspath(os.path.dirname(__file__))
     try:
         # 连接到SQLite数据库
-        conn = sqlite3.connect('../gui/Ecarebot.db')  # 数据库文件路径为当前路径下的'testEcarebot.db'
+        conn = sqlite3.connect('gui/Ecarebot.db')  # 数据库文件路径为当前路径下的'testEcarebot.db'
         cursor = conn.cursor()
 
         # 获取今天的日期

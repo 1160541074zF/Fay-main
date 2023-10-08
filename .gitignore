@@ -134,4 +134,5 @@ dmypy.json
 # database
 fay.db
 /gui/fay.db
+/gui/Ecarebot.db
 test/
