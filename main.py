@@ -50,8 +50,8 @@ if __name__ == '__main__':
     flask_server.start()
     app = QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('icon.png'))
-    win = MainWindow()
-    win.show()
+    # win = MainWindow()
+    # win.show()
     app.exit(app.exec_())
 
     
