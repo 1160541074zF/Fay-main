@@ -807,6 +807,46 @@ def delete_med_info(med_id):
 
     return 'Medication information deleted successfully.'
 
+#===============心率数据================
+@__app.route('/read-health-info', methods=['GET'])
+def read_health_inform():
+    try:
+        conn = sqlite3.connect('Ecarebot_test.db')
+        cursor = conn.cursor()
+
+        query = '''SELECT id, state, meanHR, rmssd, ANS, stressIndex, HRs, arrhythmiaNum, prob_AF, prob_PXC, prob_N_shape, prob_other, createdAt FROM health_data'''
+        cursor.execute(query, ())
+        health_data = cursor.fetchall()
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        list = [
+            {
+                'id': row[0],
+                'state': row[1],
+                'meanHR': row[2],
+                'rmssd': row[3],
+                'ANS': row[4],
+                'stressIndex': row[5],
+                'HRs': row[6],
+                'arrhythmiaNum': row[7],
+                'prob_AF': row[8],
+                'prob_PXC': row[9],
+                'prob_N_shape': row[10],
+                'prob_other': row[11],
+                'date': row[12]
+            }
+            for row in health_data
+        ]
+        print(list)
+        return jsonify({"status": "success", "health_data": list})
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"status": "error", "message": "Failed to retrieve health information."})
+
+
 #=================久坐信息=================
 # 读健康状态
 @__app.route('/read-state-info', methods=['GET'])
@@ -1083,6 +1123,15 @@ def delete_location_info(position_id):
         return 'Location information deleted successfully.'
 
 #=================巡检优先级=======================
+def map_number_to_english(number):
+    mapping = {
+        "0": "start_point",
+        "1": "bedroom",
+        "2": "living_room",
+        "3": "kitchen"
+    }
+    return mapping.get(number, "Unknown")
+
 # 配置巡检优先级
 @__app.route('/position-priority', methods=['POST'])
 def position_priority():
@@ -1090,10 +1139,14 @@ def position_priority():
     data = request.json
     # 创建一个空数组
     locations = []
+    print(map_number_to_english(data["location1"]))
+    print(map_number_to_english(data["location2"]))
+    print(map_number_to_english(data["location3"]))
     # 将变量的值添加到数组中
-    locations.append(data["location1"])
-    locations.append(data["location2"])
-    locations.append(data["location3"])
+    locations.append(map_number_to_english(data["location1"]))
+    locations.append(map_number_to_english(data["location2"]))
+    locations.append(map_number_to_english(data["location3"]))
+    # print(locations)
     # 源数据库
     source_conn = sqlite3.connect('gui/Ecarebot.db')  # 替换成你的数据库文件名
     source_cursor = source_conn.cursor()
@@ -1113,18 +1166,20 @@ def position_priority():
         source_cursor.execute("SELECT positionName, pos_x,pos_y,ori_z,ori_w FROM positionsPoint_inform WHERE positionName = ?",
                               (locations[i-1],))
         location = source_cursor.fetchone()
-        positionName, pos_x,pos_y,ori_z,ori_w = location
+        # print(location)
+        if location:
+            positionName, pos_x,pos_y,ori_z,ori_w = location
 
-        destination_cursor.execute('''INSERT INTO positionsPoint (positionName, pos_x,pos_y,ori_z,ori_w,priority)
-                                     VALUES (?, ?, ?, ?, ?, ?)''',
-                       (positionName, pos_x, pos_y, ori_z, ori_w,i,))
-        # 提交更改到目标数据库
-        destination_conn.commit()
+            destination_cursor.execute('''INSERT INTO positionsPoint (positionName, pos_x,pos_y,ori_z,ori_w,priority)
+                                         VALUES (?, ?, ?, ?, ?, ?)''',
+                           (positionName, pos_x, pos_y, ori_z, ori_w,i,))
+            # 提交更改到目标数据库
+            destination_conn.commit()
     # # 关闭数据库连接
     source_conn.close()
     destination_conn.close()
     # 将新的数据库表同步至机器人上
-    synchronize_position_priority()
+    # synchronize_position_priority()
     return 'success'
 
 @__app.route('/synchronize_position_priority', methods=['GET'])
@@ -1157,43 +1212,43 @@ def synchronize_position_priority():
 
 
 #=================心率=======================
-@__app.route('/read-health-info', methods=['GET'])
-def read_health_inform():
-    try:
-        conn = sqlite3.connect('Ecarebot_test.db')
-        cursor = conn.cursor()
-
-        query = '''SELECT id, state, meanHR, rmssd, ANS, stressIndex, HRs, arrhythmiaNum, prob_AF, prob_PXC, prob_N_shape, prob_other, createdAt FROM health_data'''
-        cursor.execute(query, ())
-        health_data = cursor.fetchall()
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        list = [
-            {
-                'id': row[0],
-                'state': row[1],
-                'meanHR': row[2],
-                'rmssd': row[3],
-                'ANS': row[4],
-                'stressIndex': row[5],
-                'HRs': row[6],
-                'arrhythmiaNum': row[7],
-                'prob_AF': row[8],
-                'prob_PXC': row[9],
-                'prob_N_shape': row[10],
-                'prob_other': row[11],
-                'date': row[12]
-            }
-            for row in health_data
-        ]
-        print(list)
-        return jsonify({"status": "success", "health_data": list})
-
-    except Exception as e:
-        print(str(e))
-        return jsonify({"status": "error", "message": "Failed to retrieve health information."})
+# @__app.route('/read-health-info', methods=['GET'])
+# def read_health_inform():
+#     try:
+#         conn = sqlite3.connect('Ecarebot_test.db')
+#         cursor = conn.cursor()
+#
+#         query = '''SELECT id, state, meanHR, rmssd, ANS, stressIndex, HRs, arrhythmiaNum, prob_AF, prob_PXC, prob_N_shape, prob_other, createdAt FROM health_data'''
+#         cursor.execute(query, ())
+#         health_data = cursor.fetchall()
+#         conn.commit()
+#         cursor.close()
+#         conn.close()
+#
+#         list = [
+#             {
+#                 'id': row[0],
+#                 'state': row[1],
+#                 'meanHR': row[2],
+#                 'rmssd': row[3],
+#                 'ANS': row[4],
+#                 'stressIndex': row[5],
+#                 'HRs': row[6],
+#                 'arrhythmiaNum': row[7],
+#                 'prob_AF': row[8],
+#                 'prob_PXC': row[9],
+#                 'prob_N_shape': row[10],
+#                 'prob_other': row[11],
+#                 'date': row[12]
+#             }
+#             for row in health_data
+#         ]
+#         print(list)
+#         return jsonify({"status": "success", "health_data": list})
+#
+#     except Exception as e:
+#         print(str(e))
+#         return jsonify({"status": "error", "message": "Failed to retrieve health information."})
 
 
 @__app.route('/read-position-info', methods=['GET'])
