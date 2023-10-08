@@ -442,15 +442,6 @@ new Vue({
               imageElement.src = imageUrl;
         },
 
-        // refreshImage() {
-        //     // 获取图片的URL，这里可以通过 Ajax 或其他方式从后端获取新图片的URL
-        //     let imageUrl = "http://localhost:5000/receive-image";
-        //
-        //     // 更新图片的src属性，加载新的图片
-        //     document.getElementById("loadedImage").src = imageUrl + "?" + new Date().getTime();
-        // },
-
-
 
               // 加载用药信息
         async getMedicine(){
@@ -614,7 +605,7 @@ new Vue({
                     "med_usage": this.user_inform.med_inform.usage,
                     "med_freq": this.user_inform.med_inform.freq,
                     "med_dosage": this.user_inform.med_inform.dosage,
-                    "med_time": this.user_inform.med_inform.time,
+                    "med_num": this.user_inform.med_inform.num,
                 };
         const headers = {
             'Content-Type': 'application/json'

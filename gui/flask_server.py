@@ -348,7 +348,7 @@ def save_medicine_info():
             med_usage = med_info.get('med_usage')
             med_freq = med_info.get('med_freq')
             med_dosage = med_info.get('med_dosage')
-            med_time = med_info.get('med_time')
+            med_num = med_info.get('med_num')
 
             # 设置SQLite数据库连接
             conn = sqlite3.connect('fay.db')
@@ -357,8 +357,8 @@ def save_medicine_info():
             print(cursor)
 
             # 插入数据到数据库
-            cursor.execute('''INSERT INTO med_inform (med_name, med_spec, med_usage, med_freq, med_dosage, med_time)
-                              VALUES (?, ?, ?, ?, ?, ?)''', (med_name, med_spec, med_usage, med_freq, med_dosage, time))
+            cursor.execute('''INSERT INTO med_inform (med_name, med_spec, med_usage, med_freq, med_dosage, med_num)
+                              VALUES (?, ?, ?, ?, ?, ?)''', (med_name, med_spec, med_usage, med_freq, med_dosage, med_num))
             conn.commit()
             cursor.close()
             conn.close()
@@ -1153,6 +1153,47 @@ def synchronize_position_priority():
     finally:
         # 关闭SSH连接
         ssh_client.close()
+
+
+#=================心率=======================
+@__app.route('/read-health-info', methods=['GET'])
+def read_health_inform():
+    try:
+        conn = sqlite3.connect('Ecarebot_test.db')
+        cursor = conn.cursor()
+
+        query = '''SELECT id, state, meanHR, rmssd, ANS, stressIndex, HRs, arrhythmiaNum, prob_AF, prob_PXC, prob_N_shape, prob_other, createdAt FROM health_data'''
+        cursor.execute(query, ())
+        health_data = cursor.fetchall()
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        list = [
+            {
+                'id': row[0],
+                'state': row[1],
+                'meanHR': row[2],
+                'rmssd': row[3],
+                'ANS': row[4],
+                'stressIndex': row[5],
+                'HRs': row[6],
+                'arrhythmiaNum': row[7],
+                'prob_AF': row[8],
+                'prob_PXC': row[9],
+                'prob_N_shape': row[10],
+                'prob_other': row[11],
+                'date': row[12]
+            }
+            for row in health_data
+        ]
+        print(list)
+        return jsonify({"status": "success", "health_data": list})
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"status": "error", "message": "Failed to retrieve health information."})
+
 
 @__app.route('/read-position-info', methods=['GET'])
 
