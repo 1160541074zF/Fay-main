@@ -530,7 +530,7 @@ def upload_file():
 @__app.route('/read-user-info', methods=['GET'])
 def read_user_inform():
     # try:
-    conn = sqlite3.connect('Ecarebot.db')
+    conn = sqlite3.connect('gui/Ecarebot.db')
     cursor = conn.cursor()
 
     query = '''SELECT id, user_name, user_gender, user_age, user_type, user_birth FROM user_inform'''
@@ -572,7 +572,7 @@ def save_user_info():
             user_birth = user_info.get('birth')
             picture_url = user_info.get('image')
             # 设置SQLite数据库连接
-            conn = sqlite3.connect('Ecarebot.db')
+            conn = sqlite3.connect('gui/Ecarebot.db')
             print(conn)
             cursor = conn.cursor()
             print(cursor)
@@ -608,7 +608,7 @@ def update_user_info():
             picture_url = user_info.get('image')
 
             # 设置SQLite数据库连接
-            conn = sqlite3.connect('Ecarebot.db')
+            conn = sqlite3.connect('gui/Ecarebot.db')
             cursor = conn.cursor()
 
             # 使用用户ID更新数据库中的数据
@@ -634,7 +634,7 @@ def delete_user_info(user_id):
     # try:
     if request.method == 'DELETE':
         # 设置SQLite数据库连接
-        conn = sqlite3.connect('Ecarebot.db')
+        conn = sqlite3.connect('gui/Ecarebot.db')
         cursor = conn.cursor()
 
         # 检查是否存在要删除的用户信息
@@ -666,7 +666,7 @@ def delete_user_info(user_id):
 @__app.route('/read-med-info', methods=['GET'])
 def read_med_inform():
     try:
-        conn = sqlite3.connect('Ecarebot.db')
+        conn = sqlite3.connect('gui/Ecarebot.db')
         cursor = conn.cursor()
 
         query = 'SELECT id, med_name, med_spec, med_usage, med_freq, med_dosage, time, med_num, user_name FROM med_inform'
@@ -711,7 +711,7 @@ def update_med_info():
         med_num = data.get('num')
         user_name = data.get('name')
 
-        conn = sqlite3.connect('Ecarebot.db')
+        conn = sqlite3.connect('gui/Ecarebot.db')
         cursor = conn.cursor()
 
         query = 'UPDATE med_inform SET med_name=?, med_spec=?, med_usage=?, med_freq=?, med_dosage=?, time=?, med_num=?, user_name=? WHERE id=?'
@@ -747,7 +747,7 @@ def save_med_info():
 
         # 在这里进行数据处理或数据库操作
         # 设置SQLite数据库连接
-        conn = sqlite3.connect('Ecarebot.db')
+        conn = sqlite3.connect('gui/Ecarebot.db')
         print(conn)
         cursor = conn.cursor()
         print(cursor)
@@ -781,7 +781,7 @@ def delete_med_info(med_id):
     try:
         if request.method == 'DELETE':
             # 设置SQLite数据库连接
-            conn = sqlite3.connect('Ecarebot.db')
+            conn = sqlite3.connect('gui/Ecarebot.db')
             cursor = conn.cursor()
 
             # 检查是否存在要删除的用药信息
@@ -812,7 +812,7 @@ def delete_med_info(med_id):
 @__app.route('/read-state-info', methods=['GET'])
 def read_state_inform():
     try:
-        conn = sqlite3.connect('Ecarebot.db')
+        conn = sqlite3.connect('gui/Ecarebot.db')
         cursor = conn.cursor()
 
         query = 'SELECT id, user_name, sit_time FROM user_state'
@@ -848,7 +848,7 @@ def save_state_info():
             sit_time = state_info.get('sit_time')
 
             # Connect to the SQLite database
-            conn = sqlite3.connect('Ecarebot.db')
+            conn = sqlite3.connect('gui/Ecarebot.db')
             cursor = conn.cursor()
 
             # Insert data into the database
@@ -879,7 +879,7 @@ def update_state_info():
             sit_time = state_info.get('sit_time')
             name = state_info.get('name')
             # Connect to the SQLite database
-            conn = sqlite3.connect('Ecarebot.db')
+            conn = sqlite3.connect('gui/Ecarebot.db')
             cursor = conn.cursor()
 
             # Update data in the database
@@ -906,7 +906,7 @@ def delete_state_info(id):
     try:
         if request.method == 'DELETE':
             # Connect to the SQLite database
-            conn = sqlite3.connect('Ecarebot.db')
+            conn = sqlite3.connect('gui/Ecarebot.db')
             cursor = conn.cursor()
 
             # Check if the user state information exists
@@ -969,7 +969,7 @@ def save_position_info():
             orientation_z = location_info.get('orientation_z')
             orientation_w = location_info.get('orientation_w')
             # 设置SQLite数据库连接
-            conn = sqlite3.connect('Ecarebot.db')
+            conn = sqlite3.connect('gui/Ecarebot.db')
             print(conn)
             cursor = conn.cursor()
             print(cursor)
@@ -1003,7 +1003,7 @@ def update_position_info():
             orientation_z = location_info.get('orientation_z')
             orientation_w = location_info.get('orientation_w')
             # 设置SQLite数据库连接
-            conn = sqlite3.connect('Ecarebot.db')
+            conn = sqlite3.connect('gui/Ecarebot.db')
             cursor = conn.cursor()
             # 使用用户ID更新数据库中的数据
             cursor.execute('''UPDATE positionsPoint_inform
@@ -1026,7 +1026,7 @@ def update_position_info():
 @__app.route('/read-position-info', methods=['GET'])
 def read_position_info():
     try:
-        conn = sqlite3.connect('Ecarebot.db')
+        conn = sqlite3.connect('gui/Ecarebot.db')
         cursor = conn.cursor()
         query = 'SELECT id, positionName, pos_x,pos_y,ori_z,ori_w FROM positionsPoint_inform'
         cursor.execute(query, ())
@@ -1057,7 +1057,7 @@ def delete_location_info(position_id):
         if request.method == 'DELETE':
             # 设置SQLite数据库连接
             print(position_id)
-            conn = sqlite3.connect('Ecarebot.db')
+            conn = sqlite3.connect('gui/Ecarebot.db')
             cursor = conn.cursor()
 
             cursor.execute("SELECT * FROM positionsPoint_inform WHERE id=?", (int(position_id),))
@@ -1095,7 +1095,7 @@ def position_priority():
     locations.append(data["location2"])
     locations.append(data["location3"])
     # 源数据库
-    source_conn = sqlite3.connect('Ecarebot.db')  # 替换成你的数据库文件名
+    source_conn = sqlite3.connect('gui/Ecarebot.db')  # 替换成你的数据库文件名
     source_cursor = source_conn.cursor()
     # 目标数据库
     destination_conn = sqlite3.connect('homePositions.db')  # 替换成你的目标数据库文件名
@@ -1297,7 +1297,7 @@ def posture_recognition():
             posture = 1
         elif '站' in describe or '立' in describe:
             posture = 3
-        conn = sqlite3.connect("Ecarebot.db")
+        conn = sqlite3.connect("gui/Ecarebot.db")
         cursor = conn.cursor()
         # 获取上次姿态数据
         cursor.execute("SELECT posture,time FROM posture_info ORDER BY id DESC LIMIT 1")
@@ -1365,11 +1365,11 @@ def posture_recognition():
                     # 2.判断是否久坐
                     if new_timespan >= 120:
                         print("老人久坐")
-                        message = "您已久坐两小时，快起身跟我一起运动下吧！"
-                        # 调用语音播报接口
-                        receive_message_method(message)
-                        # 3.调用视频播放接口
-                        robot_control_method()
+                        # message = "您已久坐两小时，快起身跟我一起运动下吧！"
+                        # # 调用语音播报接口
+                        # receive_message_method(message)
+                        # # 3.调用视频播放接口
+                        # robot_control_method()
             # 非久坐处理
             else:
                 # 清空久坐时长
