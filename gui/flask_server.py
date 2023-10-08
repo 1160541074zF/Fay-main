@@ -40,7 +40,10 @@ import configparser
 positionConfig = configparser.ConfigParser()
 positionConfig.read(r"../config.ini")
 kafka_ip = positionConfig.get("kafka","kafka_ip")
-print(kafka_ip)
+robot_host = positionConfig.get("robot","robot_host")
+robot_port = positionConfig.get("robot","robot_port")
+robot_username = positionConfig.get("robot","robot_username")
+robot_password = positionConfig.get("robot","robot_password")
 
 def __get_template():
     return render_template('index.html')
@@ -1127,12 +1130,6 @@ def position_priority():
 @__app.route('/synchronize_position_priority', methods=['GET'])
 # 将巡检优先级数据同步至机器人上
 def synchronize_position_priority():
-    config_util.load_config()
-    # 机器人SSH连接信息
-    robot_host = config_util.robot_host
-    robot_port = config_util.robot_port
-    robot_username = config_util.robot_username
-    robot_password = config_util.robot_password
 
     # 要传送的本地文件和目标路径
     local_file_path = 'homePositions.db'
