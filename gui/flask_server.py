@@ -80,7 +80,7 @@ def receive_data():
 
             # 在这里进行数据处理或数据库操作
             # 设置SQLite数据库连接
-            conn = sqlite3.connect('fay.db')
+            conn = sqlite3.connect('gui/Ecarebot.db')
             print(conn)
             cursor = conn.cursor()
             print(cursor)
@@ -122,7 +122,7 @@ def receive_data():
 # def get_medicine_by_id():
 #     try:
 #         # 连接SQLite数据库
-#         conn = sqlite3.connect('fay.db')
+#         conn = sqlite3.connect('gui/Ecarebot.db')
 #         cursor = conn.cursor()
 #
 #         med_id = 2
@@ -315,7 +315,7 @@ def get_robot_data():
 #             user_type = user_info.get('user_type')
 #
 #             # 设置SQLite数据库连接
-#             conn = sqlite3.connect('fay.db')
+#             conn = sqlite3.connect('gui/Ecarebot.db')
 #             print(conn)
 #             cursor = conn.cursor()
 #             print(cursor)
@@ -351,7 +351,7 @@ def save_medicine_info():
             med_num = med_info.get('med_num')
 
             # 设置SQLite数据库连接
-            conn = sqlite3.connect('fay.db')
+            conn = sqlite3.connect('gui/Ecarebot.db')
             print(conn)
             cursor = conn.cursor()
             print(cursor)
@@ -383,7 +383,7 @@ def save_medicine_info():
 #             coordinate = location_info.get('coordinate')
 #
 #             # 设置SQLite数据库连接
-#             conn = sqlite3.connect('fay.db')
+#             conn = sqlite3.connect('gui/Ecarebot.db')
 #             print(conn)
 #             cursor = conn.cursor()
 #             print(cursor)
@@ -414,7 +414,7 @@ def save_time_info():
             sit_time = sit_time.get('time')
 
             # 设置SQLite数据库连接
-            conn = sqlite3.connect('fay.db')
+            conn = sqlite3.connect('gui/Ecarebot.db')
             print(conn)
             cursor = conn.cursor()
             print(cursor)
@@ -1098,7 +1098,7 @@ def position_priority():
     source_conn = sqlite3.connect('gui/Ecarebot.db')  # 替换成你的数据库文件名
     source_cursor = source_conn.cursor()
     # 目标数据库
-    destination_conn = sqlite3.connect('homePositions.db')  # 替换成你的目标数据库文件名
+    destination_conn = sqlite3.connect('gui/homePositions.db')  # 替换成你的目标数据库文件名
     destination_cursor = destination_conn.cursor()
     # 判断优先级表中是否有数据 有则清空数据
     destination_cursor.execute("SELECT * FROM positionsPoint")
@@ -1132,7 +1132,8 @@ def position_priority():
 def synchronize_position_priority():
 
     # 要传送的本地文件和目标路径
-    local_file_path = 'homePositions.db'
+    # 改成绝对路径
+    local_file_path = '/Fay-main/gui/homePositions.db'
     remote_file_path = '/home/ub/ecare-bot/src/ecare_inspection/src/homePositions.db'  # 机器人上的目标路径
 
     try:
