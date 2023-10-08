@@ -16,7 +16,7 @@ import os
 import cv2
 import numpy as np
 import re
-
+import paramiko
 
 from core.tts_voice import EnumVoice
 from gevent import pywsgi
@@ -31,10 +31,16 @@ from ai_module import yolov8, image_posture, image_danger, image_emotion
 from datetime import datetime
 from face_train_and_recognition_module.face_train_and_recognition_module import face_recognition, \
     getImageAndLabels, save_base64_image, get_next_number
+from utils.config_util import system_config
 
 __app = Flask(__name__)
 CORS(__app, supports_credentials=True)
 
+import configparser
+positionConfig = configparser.ConfigParser()
+positionConfig.read(r"../config.ini")
+kafka_ip = positionConfig.get("kafka","kafka_ip")
+print(kafka_ip)
 
 def __get_template():
     return render_template('index.html')
@@ -160,7 +166,6 @@ def receive_message():
     kafka_ip = payload["kafka_ip"]
     topic_name = payload["topic_name"]
     message = payload["message"]
-
     # Process to send message
     client.send_message_to_kafka(kafka_ip, topic_name, message)
     response = {'message': 'send successfully'}
@@ -168,7 +173,6 @@ def receive_message():
 
 # 语音播报
 def receive_message_method(message):
-    kafka_ip = "192.168.3.48:9092"
     topic_name = "reminder"
     message = {
         "type": "voice",
@@ -190,7 +194,6 @@ def robot_control():
 
 # 播放视频
 def robot_control_method():
-    kafka_ip = "192.168.3.48:9092"
     topic_name = "control"
     message = "play_video"
     # Process to send message
@@ -1077,39 +1080,77 @@ def delete_location_info(position_id):
 def position_priority():
     # 接收优先级配置数据
     data = request.json
-    # 3个点位的名称
-    location1 = data["location1"]
-    location2 = data["location2"]
-    location3 = data["location3"]
+    # 创建一个空数组
+    locations = []
+    # 将变量的值添加到数组中
+    locations.append(data["location1"])
+    locations.append(data["location2"])
+    locations.append(data["location3"])
     # 源数据库
     source_conn = sqlite3.connect('Ecarebot.db')  # 替换成你的数据库文件名
     source_cursor = source_conn.cursor()
     # 目标数据库
     destination_conn = sqlite3.connect('homePositions.db')  # 替换成你的目标数据库文件名
     destination_cursor = destination_conn.cursor()
-
-    # 清空优先级配置表
-    destination_conn.execute("DELETE FROM positionsPoint")
-    destination_conn.commit()
-    # 保存坐标信息及其优先级至数据表中
-    for i in range(3):
-        # 查询地点数据
-        name = "location"
-        location_name = f"{name}_{i}"
-        source_cursor.execute("SELECT positionName, pos_x,pos_y,ori_z,ori_w FROM positionsPoint_inform WHERE positionName = ?",
-                              (location_name,))
-        location = source_cursor.fetchall()
-        # destination_cursor.execute('''INSERT INTO positionsPoint_inform (positionName, pos_x,pos_y,ori_z,ori_w)
-        #                              VALUES (?, ?, ?, ?, ?)''',
-        #                (position, position_x, position_y, orientation_z, orientation_w))
-        # 提交更改到目标数据库
+    # 判断优先级表中是否有数据 有则清空数据
+    destination_cursor.execute("SELECT * FROM positionsPoint")
+    priority_data = destination_cursor.fetchone()
+    if priority_data:
+        destination_cursor.execute("DELETE FROM positionsPoint")
         destination_conn.commit()
 
-    # 关闭数据库连接
+    # 保存坐标信息及其优先级至数据表中
+    for i in range(1,4):
+        # 查询地点数据
+        source_cursor.execute("SELECT positionName, pos_x,pos_y,ori_z,ori_w FROM positionsPoint_inform WHERE positionName = ?",
+                              (locations[i-1],))
+        location = source_cursor.fetchone()
+        positionName, pos_x,pos_y,ori_z,ori_w = location
+
+        destination_cursor.execute('''INSERT INTO positionsPoint (positionName, pos_x,pos_y,ori_z,ori_w,priority)
+                                     VALUES (?, ?, ?, ?, ?, ?)''',
+                       (positionName, pos_x, pos_y, ori_z, ori_w,i,))
+        # 提交更改到目标数据库
+        destination_conn.commit()
+    # # 关闭数据库连接
     source_conn.close()
     destination_conn.close()
-
     # 将新的数据库表同步至机器人上
+    synchronize_position_priority()
+    return 'success'
+
+@__app.route('/synchronize_position_priority', methods=['GET'])
+# 将巡检优先级数据同步至机器人上
+def synchronize_position_priority():
+    config_util.load_config()
+    # 机器人SSH连接信息
+    robot_host = config_util.robot_host
+    robot_port = config_util.robot_port
+    robot_username = config_util.robot_username
+    robot_password = config_util.robot_password
+
+    # 要传送的本地文件和目标路径
+    local_file_path = 'homePositions.db'
+    remote_file_path = '/home/ub/ecare-bot/src/ecare_inspection/src/homePositions.db'  # 机器人上的目标路径
+
+    try:
+        # 创建SSH客户端连接
+        ssh_client = paramiko.SSHClient()
+        ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh_client.connect(hostname=robot_host, port=robot_port, username=robot_username, password=robot_password)
+
+        # 使用SFTP协议传送文件
+        sftp = ssh_client.open_sftp()
+        sftp.put(local_file_path, remote_file_path)
+        sftp.close()
+
+        print('文件传送成功')
+
+    except Exception as e:
+        print('文件传送失败:', str(e))
+    finally:
+        # 关闭SSH连接
+        ssh_client.close()
 
 @__app.route('/read-position-info', methods=['GET'])
 
@@ -1177,10 +1218,10 @@ def danger_detection():
         # 机器人拍照的图片
         image = request_data.get("image")
         # 图像识别大模型结果
-        response = image_danger.danger_detection(image)
+        # response = image_danger.danger_detection(image)
         # 大模型能够返回行为识别的结果
-        result_data = json.loads(response)
-        describe = result_data['result']
+        # result_data = json.loads(response)
+        # describe = result_data['result']
         describe = "在当前场景中，没有危险的情况出现。"
         print(describe)
         # 机器人播报危险检测的结果
@@ -1213,10 +1254,10 @@ def emotion_recognition():
         # 机器人拍照的图片
         image = request_data.get("image")
         # 图像识别大模型结果
-        response = image_emotion.emotion_detection(image)
+        # response = image_emotion.emotion_detection(image)
         # 大模型能够返回行为识别的结果
-        result_data = json.loads(response)
-        describe = result_data['result']
+        # result_data = json.loads(response)
+        # describe = result_data['result']
         describe = "您好！很高兴看到您微笑并快乐着度过这个美好的时刻。祝您今天愉快！"
         if '”' in describe:
             chinese_quotes = extract_chinese_quotes(describe)
@@ -1240,10 +1281,10 @@ def posture_recognition():
         image = request_data.get("image")
         time = request_data.get("time")
         # 图像识别大模型结果
-        response = image_posture.posture_recognition(image)
+        # response = image_posture.posture_recognition(image)
         # 大模型能够返回行为识别的结果
-        result_data = json.loads(response)
-        describe = result_data['result']
+        # result_data = json.loads(response)
+        # describe = result_data['result']
         describe = "老人正坐在沙发上"
         if '坐' in describe:
             posture = 2
@@ -1253,7 +1294,7 @@ def posture_recognition():
             posture = 1
         elif '站' in describe or '立' in describe:
             posture = 3
-        conn = sqlite3.connect("fay.db")
+        conn = sqlite3.connect("Ecarebot.db")
         cursor = conn.cursor()
         # 获取上次姿态数据
         cursor.execute("SELECT posture,time FROM posture_info ORDER BY id DESC LIMIT 1")
@@ -1355,7 +1396,6 @@ def posture_recognition():
         # 关闭连接
         if conn:
             conn.close()
-
 
 def run():
     server = pywsgi.WSGIServer(('0.0.0.0',5000), __app)
