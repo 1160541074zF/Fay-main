@@ -520,7 +520,7 @@ def home_get():
 @__app.route('/upload_sql', methods=['POST'])
 def upload_file():
     file = request.files['file']
-    file.save('Ecarebot_test.db')
+    file.save('Ecarebot.db')
     return 'sqllite上传成功'
 
 # ==========接口修改================
@@ -1160,7 +1160,7 @@ def synchronize_position_priority():
 @__app.route('/read-health-info', methods=['GET'])
 def read_health_inform():
     try:
-        conn = sqlite3.connect('Ecarebot_test.db')
+        conn = sqlite3.connect('gui/Ecarebot.db')
         cursor = conn.cursor()
 
         query = '''SELECT id, state, meanHR, rmssd, ANS, stressIndex, HRs, arrhythmiaNum, prob_AF, prob_PXC, prob_N_shape, prob_other, createdAt FROM health_data'''
