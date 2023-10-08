@@ -520,7 +520,7 @@ def home_get():
 @__app.route('/upload_sql', methods=['POST'])
 def upload_file():
     file = request.files['file']
-    file.save('Ecarebot.db')
+    file.save('gui/Ecarebot.db')
     return 'sqllite上传成功'
 
 # ==========接口修改================
