@@ -7,6 +7,7 @@ import numpy as np
 import sqlite3
 from datetime import datetime
 from datetime import date
+from gui import flask_server
 
 
 
@@ -81,8 +82,10 @@ def face_recognition(image_data):
             is_first_recognition_today = check_user_id_in_database(ids)
             if is_first_recognition_today:
                 print("今天有记录")
+                flask_server.receive_message_method("再次见到你很高兴")
             else:
                 print("今天没有记录")
+                flask_server.receive_message_method("今天我是第一次见到你")
 
             # 添加人脸识别记录
             insert_face_recognition_record(name, ids)

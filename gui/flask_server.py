@@ -32,10 +32,11 @@ from datetime import datetime
 from face_train_and_recognition_module.face_train_and_recognition_module import face_recognition, \
     getImageAndLabels, save_base64_image, get_next_number
 from utils.config_util import system_config
-
+from gui.health import health_blueprint
 __app = Flask(__name__)
 CORS(__app, supports_credentials=True)
-
+# 注册蓝图
+__app.register_blueprint(health_blueprint)
 import configparser
 positionConfig = configparser.ConfigParser()
 positionConfig.read(r"../config.ini")
@@ -520,7 +521,7 @@ def home_get():
 @__app.route('/upload_sql', methods=['POST'])
 def upload_file():
     file = request.files['file']
-    file.save('Ecarebot_test.db')
+    file.save('Ecarebot.db')
     return 'sqllite上传成功'
 
 # ==========接口修改================
