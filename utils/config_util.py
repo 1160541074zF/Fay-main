@@ -25,7 +25,17 @@ proxy_config = None
 
 ASR_mode = None
 local_asr_ip = None 
-local_asr_port = None 
+local_asr_port = None
+
+# 边缘服务器IP
+server_ip = None
+# 机器人ssh
+robot_host = None
+robot_port = None
+robot_username = None
+robot_password = None
+# kafkaIP
+kafka_ip = None
 
 def load_config():
     global config
@@ -52,6 +62,13 @@ def load_config():
     global local_asr_ip 
     global local_asr_port
 
+    global server_ip
+    global robot_host
+    global robot_port
+    global robot_username
+    global robot_password
+    global kafka_ip
+
     system_config = ConfigParser()
     system_config.read('system.conf', encoding='UTF-8')
     key_ali_nls_key_id = system_config.get('key', 'ali_nls_key_id')
@@ -76,6 +93,13 @@ def load_config():
     local_asr_port = system_config.get('key', 'local_asr_port')
 
     proxy_config = system_config.get('key', 'proxy_config')
+
+    server_ip = system_config.get('key', 'server_ip')
+    robot_host = system_config.get('key', 'robot_host')
+    robot_port = system_config.get('key', 'robot_port')
+    robot_username = system_config.get('key', 'robot_username')
+    robot_password = system_config.get('key', 'robot_password')
+    kafka_ip = system_config.get('key', 'kafka_ip')
 
     config = json.load(codecs.open('config.json', encoding='utf-8'))
 
