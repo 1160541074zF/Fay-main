@@ -38,7 +38,7 @@ CORS(__app, supports_credentials=True)
 
 import configparser
 positionConfig = configparser.ConfigParser()
-positionConfig.read(r"../config.ini")
+positionConfig.read(r"config.ini")
 kafka_ip = positionConfig.get("kafka","kafka_ip")
 robot_host = positionConfig.get("robot","robot_host")
 robot_port = positionConfig.get("robot","robot_port")
