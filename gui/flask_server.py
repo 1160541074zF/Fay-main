@@ -1358,7 +1358,7 @@ def emotion_recognition():
         # 大模型能够返回行为识别的结果
         # result_data = json.loads(response)
         # describe = result_data['result']
-        describe = "您好！很高兴看到您微笑并快乐着度过这个美好的时刻。祝您今天愉快！"
+        describe = "尊敬的先生，您看起来很高兴。您的眼镜和微笑表明您在享受当前时刻并欣赏周围的环境。感谢您选择我们的服务，我们期待为您提供最好的体验。祝您度过愉快的一天！"
         if '”' in describe:
             chinese_quotes = extract_chinese_quotes(describe)
             for quote in chinese_quotes:
@@ -1462,11 +1462,11 @@ def posture_recognition():
                     # 2.判断是否久坐
                     if new_timespan >= 120:
                         print("老人久坐")
-                        # message = "您已久坐两小时，快起身跟我一起运动下吧！"
-                        # # 调用语音播报接口
-                        # receive_message_method(message)
-                        # # 3.调用视频播放接口
-                        # robot_control_method()
+                        message = "您已久坐两小时，快起身跟我一起运动下吧！"
+                        # 调用语音播报接口
+                        receive_message_method(message)
+                        # 3.调用视频播放接口
+                        robot_control_method()
             # 非久坐处理
             else:
                 # 清空久坐时长
