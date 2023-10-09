@@ -71,6 +71,8 @@ def face_recognition(image_data):
         if confidence > 70:
             name = 'null'
             ids = 0
+            # 添加人脸识别记录
+            insert_face_recognition_record(name, ids)
             cv2.putText(img, 'unkonw', (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 1)
         else:
 
@@ -87,9 +89,7 @@ def face_recognition(image_data):
                 flask_server.receive_message_method("再次见到你很高兴")
             else:
                 print("今天没有记录")
-                flask_server.receive_message_method("今天我是第一次见到你")
-
-
+                flask_server.receive_message_method("今天我第一次见到你很高兴")
 
             cv2.putText(img, name, (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 1)
     return img,name,ids

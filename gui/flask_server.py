@@ -239,9 +239,12 @@ def receive_image():
             # 将Base64编码转换为图片文件
             image_data = base64.b64decode(image_base64)
             print(image_data)
-            image_url = "./gui/static/source/img/picture.jpg"  # 设置图片保存路径
-
+            image_url = "gui/static/source/img/picture.jpg"  # 设置图片保存路径
+            vue_url = "/home/yjs/Ecarebot/src/assets/logo.png"  # 设置图片保存路径
             with open(image_url, 'wb') as f:
+                f.write(image_data)
+
+            with open(vue_url, 'wb') as f:
                 f.write(image_data)
 
 
@@ -520,7 +523,7 @@ def home_get():
 @__app.route('/upload_sql', methods=['POST'])
 def upload_file():
     file = request.files['file']
-    file.save('Ecarebot_test.db')
+    file.save('gui/Ecarebot.db')
     return 'sqllite上传成功'
 
 # ==========接口修改================
@@ -811,7 +814,7 @@ def delete_med_info(med_id):
 @__app.route('/read-health-info', methods=['GET'])
 def read_health_inform():
     try:
-        conn = sqlite3.connect('Ecarebot_test.db')
+        conn = sqlite3.connect('gui/Ecarebot.db')
         cursor = conn.cursor()
 
         query = '''SELECT id, state, meanHR, rmssd, ANS, stressIndex, HRs, arrhythmiaNum, prob_AF, prob_PXC, prob_N_shape, prob_other, createdAt FROM health_data'''
@@ -1125,14 +1128,14 @@ def delete_location_info(position_id):
 #=================巡检优先级=======================
 def map_number_to_english(number):
     mapping = {
-        "0": "start_point",
-        "1": "bedroom",
-        "2": "living_room",
-        "3": "kitchen"
+        0: "start_point",
+        1: "bedroom",
+        2: "living_room",
+        3: "kitchen"
     }
     return mapping.get(number, "Unknown")
 
-# 配置巡检优先级
+# 配置巡检优先级f
 @__app.route('/position-priority', methods=['POST'])
 def position_priority():
     # 接收优先级配置数据
@@ -1175,6 +1178,10 @@ def position_priority():
                            (positionName, pos_x, pos_y, ori_z, ori_w,i,))
             # 提交更改到目标数据库
             destination_conn.commit()
+    query = 'SELECT * FROM positionsPoint'
+    destination_cursor.execute(query, ())
+    position_info = destination_cursor.fetchall()
+    print(position_info)
     # # 关闭数据库连接
     source_conn.close()
     destination_conn.close()
@@ -1209,6 +1216,35 @@ def synchronize_position_priority():
     finally:
         # 关闭SSH连接
         ssh_client.close()
+
+
+@__app.route('/read-navigator-info', methods=['GET'])
+def read_navigator_info():
+    try:
+        conn = sqlite3.connect('gui/homePositions.db')
+        cursor = conn.cursor()
+        query = 'SELECT id, positionName, pos_x,pos_y,ori_z,ori_w,priority FROM positionsPoint'
+        cursor.execute(query, ())
+        navigator_info = cursor.fetchall()
+        conn.commit()
+        cursor.close()
+        conn.close()
+        list = [
+            {
+                'id': row[0],
+                'positionName': row[1],
+                'pos_x': row[2],
+                'pos_y': row[3],
+                'ori_z': row[4],
+                'ori_w': row[5],
+                'priority': row[6]
+            }
+            for row in navigator_info
+        ]
+        print(list)
+        return jsonify({"status": "success", "navigator_info": list})
+    except Exception as e:
+        return jsonify({"status": "error", "message": "读取巡检信息失败", "error": str(e)})
 
 
 #=================心率=======================
@@ -1322,7 +1358,7 @@ def danger_detection():
         # 大模型能够返回行为识别的结果
         # result_data = json.loads(response)
         # describe = result_data['result']
-        describe = "在当前场景中，没有危险的情况出现。"
+        describe = "警告！发现火灾！我检测到附近有火焰的存在，请立刻采取适当的紧急措施。如果火灾没有及时发现并控制，将会导致火势扩大、蔓延至整个房间。"
         print(describe)
         # 机器人播报危险检测的结果
         # if '火' not in describe and '玻璃' not in describe:
@@ -1358,7 +1394,7 @@ def emotion_recognition():
         # 大模型能够返回行为识别的结果
         # result_data = json.loads(response)
         # describe = result_data['result']
-        describe = "您好！很高兴看到您微笑并快乐着度过这个美好的时刻。祝您今天愉快！"
+        describe = "尊敬的先生，您看起来很高兴。您的眼镜和微笑表明您在享受当前时刻并欣赏周围的环境。感谢您选择我们的服务，我们期待为您提供最好的体验。祝您度过愉快的一天！"
         if '”' in describe:
             chinese_quotes = extract_chinese_quotes(describe)
             for quote in chinese_quotes:
@@ -1462,11 +1498,11 @@ def posture_recognition():
                     # 2.判断是否久坐
                     if new_timespan >= 120:
                         print("老人久坐")
-                        # message = "您已久坐两小时，快起身跟我一起运动下吧！"
-                        # # 调用语音播报接口
-                        # receive_message_method(message)
-                        # # 3.调用视频播放接口
-                        # robot_control_method()
+                        message = "您已久坐两小时，快起身跟我一起运动下吧！"
+                        # 调用语音播报接口
+                        receive_message_method(message)
+                        # 3.调用视频播放接口
+                        robot_control_method()
             # 非久坐处理
             else:
                 # 清空久坐时长

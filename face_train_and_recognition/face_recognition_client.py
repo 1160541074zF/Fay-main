@@ -21,11 +21,11 @@ def detect_face_with_api(image_path):
     # 获取识别结果
     print(result['result_id'])
     print(result['result_name'])
-    print(result['result_is_first_recognition_today'])
+    # print(result['result_is_first_recognition_today'])
 
 
 
 if __name__ == '__main__':
-    image_path = '3.durant.jpg'
+    image_path = '2.程留洋.jpg'
     detect_face_with_api(image_path)
 
